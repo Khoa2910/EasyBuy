@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - EasyBuy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom Theme -->
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .auth-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .input-group-text {
+            background: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag"></i>EasyBuy
+            </a>
+        </div>
+    </nav>
+
+    <!-- Login Form -->
+    <div class="container mt-5" style="margin-top: 120px !important;">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-lg border-0 auth-card" style="border-radius: 1rem;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="mb-3">
+                                <i class="fas fa-user-circle" style="font-size: 4rem; color: var(--primary-color);"></i>
+                            </div>
+                            <h2 class="fw-bold mb-2">Đăng nhập</h2>
+                            <p class="text-muted">Chào mừng bạn quay trở lại!</p>
+                        </div>
+                        
+                        <form id="loginForm">
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-envelope text-muted"></i>
+                                    </span>
+                                    <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="Nhập email của bạn" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">Mật khẩu</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control border-start-0" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember">
+                                    <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
+                                </div>
+                                <a href="#" class="text-decoration-none text-primary">Quên mật khẩu?</a>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold" style="border-radius: 0.5rem;">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="mb-3">Chưa có tài khoản? <a href="register.html" class="text-primary fw-semibold">Đăng ký ngay</a></p>
+                        </div>
+                        
+                        <!-- Demo Accounts -->
+                        <hr class="my-4">
+                        <div class="text-center">
+                            <small class="text-muted mb-2 d-block">Tài khoản demo:</small>
+                            <button class="btn btn-outline-primary btn-sm" onclick="fillDemo('admin')">
+                                <i class="fas fa-user-shield me-1"></i>Admin: admin@tmdt.com / admin123
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const loginBtn = document.querySelector('button[type="submit"]');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang đăng nhập...';
+            
+            try {
+                console.log('Attempting login with:', { email, password });
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (response.ok && (data.accessToken || data.token)) {
+                    // Save user data to localStorage
+                    const token = data.accessToken || data.token;
+                    localStorage.setItem('accessToken', token);
+                    localStorage.setItem('tmdt_user', JSON.stringify({
+                        ...data.user,
+                        accessToken: token
+                    }));
+                    
+                    console.log('Token saved:', token);
+                    console.log('User data saved:', data.user);
+                    
+                    // Login successful - no alert needed
+                    
+                    // Redirect based on user role
+                    if (data.user && data.user.role === 'admin') {
+                        window.location.href = 'admin-products.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    alert('Lỗi: ' + (data.message || data.error || 'Đăng nhập thất bại'));
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Đăng nhập';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Lỗi kết nối: ' + error.message);
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Đăng nhập';
+            }
+        });
+        
+        // Fill demo account
+        function fillDemo(type) {
+            if (type === 'admin') {
+                document.getElementById('email').value = 'admin@tmdt.com';
+                document.getElementById('password').value = 'admin123';
+            }
+        }
+        
+        // Check if already logged in
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            console.log('Already logged in, redirecting...');
+            const userData = localStorage.getItem('tmdt_user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                if (user.role === 'admin') {
+                    window.location.href = 'admin-products.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

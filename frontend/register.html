@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - EasyBuy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom Theme -->
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .auth-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .input-group-text {
+            background: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag"></i>EasyBuy
+            </a>
+        </div>
+    </nav>
+
+    <!-- Register Form -->
+    <div class="container mt-5" style="margin-top: 120px !important;">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg border-0 auth-card" style="border-radius: 1rem;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="mb-3">
+                                <i class="fas fa-user-plus" style="font-size: 4rem; color: var(--primary-color);"></i>
+                            </div>
+                            <h2 class="fw-bold mb-2">Đăng ký tài khoản</h2>
+                            <p class="text-muted">Tạo tài khoản để bắt đầu mua sắm!</p>
+                        </div>
+                        
+                        <form id="registerForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="firstName" class="form-label fw-semibold">Họ</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0" id="firstName" placeholder="Nhập họ" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="lastName" class="form-label fw-semibold">Tên</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0" id="lastName" placeholder="Nhập tên" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-envelope text-muted"></i>
+                                    </span>
+                                    <input type="email" class="form-control border-start-0" id="email" placeholder="Nhập email của bạn" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="phone" class="form-label fw-semibold">Số điện thoại</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-phone text-muted"></i>
+                                    </span>
+                                    <input type="tel" class="form-control border-start-0" id="phone" placeholder="Nhập số điện thoại">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">Mật khẩu</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control border-start-0" id="password" placeholder="Nhập mật khẩu" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label fw-semibold">Xác nhận mật khẩu</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control border-start-0" id="confirmPassword" placeholder="Nhập lại mật khẩu" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    Tôi đồng ý với <a href="#" class="text-primary text-decoration-none">điều khoản sử dụng</a>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold mb-3" style="border-radius: 0.5rem;">
+                                <i class="fas fa-user-plus me-2"></i>Đăng ký
+                            </button>
+                            
+                            <div class="text-center mb-3">
+                                <span class="text-muted">hoặc</span>
+                            </div>
+                            
+                            <a href="/auth/google" class="btn btn-outline-danger w-100 py-2 mb-3" style="border-radius: 0.5rem;">
+                                <i class="fab fa-google me-2"></i>Đăng ký bằng Google
+                            </a>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">Đã có tài khoản? <a href="login-simple.html" class="text-primary fw-semibold">Đăng nhập ngay</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Mật khẩu xác nhận không khớp!');
+                return;
+            }
+            
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi OTP...';
+            
+            try {
+                const response = await fetch('/api/auth/send-otp-register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Show OTP in demo mode
+                    if (data.otp) {
+                        alert(`DEMO MODE: Mã OTP của bạn là: ${data.otp}\n\nVui lòng sử dụng mã này để đăng ký.`);
+                    }
+                    
+                    // Redirect to OTP verification page
+                    const userData = {
+                        firstName,
+                        lastName,
+                        phone,
+                        password
+                    };
+                    
+                    const params = new URLSearchParams({
+                        email: email,
+                        type: 'registration',
+                        userData: JSON.stringify(userData)
+                    });
+                    
+                    window.location.href = `verify-otp.html?${params.toString()}`;
+                } else {
+                    alert('Lỗi: ' + data.error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Đăng ký';
+                }
+            } catch (error) {
+                alert('Lỗi kết nối: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Đăng ký';
+            }
+        });
+        
+        // Check if already logged in
+        if (localStorage.getItem('tmdt_user')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
+

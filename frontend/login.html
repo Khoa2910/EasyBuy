@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - EasyBuy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-home me-2"></i>EasyBuy
+            </a>
+        </div>
+    </nav>
+
+    <!-- Login Form -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <h3 class="text-center mb-4">Đăng nhập</h3>
+                        
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mật khẩu</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember">
+                                <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary w-100 mb-3">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </button>
+                                
+                                <div class="text-center mb-3">
+                                    <span class="text-muted">hoặc</span>
+                                </div>
+                                
+                                <a href="/auth/google" class="btn btn-outline-danger w-100">
+                                    <i class="fab fa-google me-2"></i>Đăng nhập bằng Google
+                                </a>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+                            <a href="#" class="text-decoration-none">Quên mật khẩu?</a>
+                        </div>
+                        
+                        <!-- Demo Accounts -->
+                        <hr class="my-4">
+                        <div class="text-center">
+                            <small class="text-muted">Tài khoản demo:</small><br>
+                            <button class="btn btn-outline-secondary btn-sm mt-2" onclick="fillDemo('admin')">
+                                Admin: admin@tmdt.com / admin123
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const loginBtn = document.querySelector('button[type="submit"]');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang đăng nhập...';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Save user data to localStorage
+                    localStorage.setItem('tmdt_user', JSON.stringify({
+                        ...data.user,
+                        accessToken: data.accessToken || data.token,
+                        refreshToken: data.refreshToken
+                    }));
+                    localStorage.setItem('tmdt_token', data.accessToken || data.token);
+                    
+                    alert('Đăng nhập thành công! Chào mừng bạn trở lại!');
+                    
+                    // Redirect based on user role
+                    if (data.user && data.user.role === 'admin') {
+                    window.location.href = 'admin-products.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    alert('Lỗi: ' + (data.message || data.error));
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Đăng nhập';
+                }
+            } catch (error) {
+                alert('Lỗi kết nối: ' + error.message);
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Đăng nhập';
+            }
+        });
+        
+        // Fill demo account
+        function fillDemo(type) {
+            if (type === 'admin') {
+                document.getElementById('email').value = 'admin@tmdt.com';
+                document.getElementById('password').value = 'admin123';
+            }
+        }
+        
+        // Handle Google OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const googleSuccess = urlParams.get('google_success');
+        const userParam = urlParams.get('user');
+        const error = urlParams.get('error');
+        
+        if (googleSuccess === '1' && userParam) {
+            try {
+                const userData = JSON.parse(decodeURIComponent(userParam));
+                
+                // Store user data in localStorage
+                localStorage.setItem('tmdt_user', JSON.stringify(userData));
+                localStorage.setItem('tmdt_token', 'google-auth-token');
+                
+                alert('Đăng nhập Google thành công!');
+                window.location.href = 'index.html';
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+                alert('Lỗi xử lý thông tin người dùng');
+            }
+        }
+        
+        if (error === 'google_auth_failed') {
+            alert('Đăng nhập Google thất bại. Vui lòng thử lại.');
+        }
+        
+        // Check if already logged in
+        const userData = localStorage.getItem('tmdt_user');
+        if (userData) {
+            const user = JSON.parse(userData);
+            if (user.role === 'admin') {
+                window.location.href = 'admin-products.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

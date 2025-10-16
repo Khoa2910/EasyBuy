@@ -1,0 +1,280 @@
+version: '3.8'
+
+services:
+  # Database Services
+  mysql:
+    image: mysql:8.0
+    container_name: tmdt_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: easybuy
+      MYSQL_USER: tmdt_user
+      MYSQL_PASSWORD: tmdt_password
+    ports:
+      - "3306:3306"
+      
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - tmdt_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: tmdt_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tmdt_network
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: tmdt_api_gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your_jwt_secret_key_here
+      - STRIPE_SECRET_KEY=your_stripe_secret_key
+      - AWS_ACCESS_KEY_ID=your_aws_access_key
+      - AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=your_s3_bucket_name
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  # Microservices
+  auth-service:
+    build: ./services/auth-service
+    container_name: tmdt_auth_service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your_jwt_secret_key_here
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  user-service:
+    build: ./services/user-service
+    container_name: tmdt_user_service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  product-service:
+    build: ./services/product-service
+    container_name: tmdt_product_service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AWS_ACCESS_KEY_ID=your_aws_access_key
+      - AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=your_s3_bucket_name
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: tmdt_payment_service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - STRIPE_SECRET_KEY=your_stripe_secret_key
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  admin-service:
+    build: ./services/admin-service
+    container_name: tmdt_admin_service
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  search-service:
+    build: ./services/search-service
+    container_name: tmdt_search_service
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  chat-service:
+    build: ./services/chat-service
+    container_name: tmdt_chat_service
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  order-service:
+    build: ./services/order-service
+    container_name: tmdt_order_service
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=production
+      - PORT=3008
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: tmdt_notification_service
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=production
+      - PORT=3009
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=tmdt_user
+      - MYSQL_PASSWORD=tmdt_password
+      - MYSQL_DATABASE=easybuy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SENDGRID_API_KEY=your_sendgrid_api_key
+      - TWILIO_ACCOUNT_SID=your_twilio_account_sid
+      - TWILIO_AUTH_TOKEN=your_twilio_auth_token
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - tmdt_network
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus
+    container_name: tmdt_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - tmdt_network
+
+  grafana:
+    image: grafana/grafana
+    container_name: tmdt_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - tmdt_network
+
+volumes:
+  mysql_data:
+  redis_data:
+  grafana_data:
+
+networks:
+  tmdt_network:
+    driver: bridge
+

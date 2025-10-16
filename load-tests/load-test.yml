@@ -1,0 +1,172 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    
+    # Ramp up phase
+    - duration: 120
+      arrivalRate: 10
+      name: "Ramp up"
+    
+    # Sustained load phase
+    - duration: 300
+      arrivalRate: 20
+      name: "Sustained load"
+    
+    # Peak load phase
+    - duration: 180
+      arrivalRate: 50
+      name: "Peak load"
+    
+    # Cool down phase
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool down"
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: "Browse Products"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/products"
+          capture:
+            - json: "$.products[0].id"
+              as: "productId"
+      - get:
+          url: "/api/categories"
+      - get:
+          url: "/api/brands"
+
+  - name: "User Registration and Login"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/auth/register"
+          json:
+            email: "test{{ $randomInt(1, 10000) }}@example.com"
+            password: "password123"
+            firstName: "Test"
+            lastName: "User"
+            phone: "0123456789"
+          capture:
+            - json: "$.accessToken"
+              as: "accessToken"
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@example.com"
+            password: "password123"
+          capture:
+            - json: "$.accessToken"
+              as: "accessToken"
+
+  - name: "Product Search and View"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/search?q=kitchen"
+      - get:
+          url: "/api/products?category=1&limit=12"
+      - get:
+          url: "/api/products/1"
+
+  - name: "Shopping Cart Operations"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@example.com"
+            password: "password123"
+          capture:
+            - json: "$.accessToken"
+              as: "accessToken"
+      - get:
+          url: "/api/cart"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      - post:
+          url: "/api/cart/add"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            productId: 1
+            quantity: 2
+      - get:
+          url: "/api/cart"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+
+  - name: "Order Creation"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@example.com"
+            password: "password123"
+          capture:
+            - json: "$.accessToken"
+              as: "accessToken"
+      - post:
+          url: "/api/cart/add"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            productId: 1
+            quantity: 1
+      - post:
+          url: "/api/orders"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            shippingAddress:
+              recipientName: "Test User"
+              phone: "0123456789"
+              addressLine1: "123 Test Street"
+              city: "Hanoi"
+              state: "Hanoi"
+              postalCode: "100000"
+              country: "Vietnam"
+            paymentMethod: "stripe"
+            notes: "Load test order"
+
+  - name: "Admin Operations"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "admin@tmdt.com"
+            password: "admin123"
+          capture:
+            - json: "$.accessToken"
+              as: "accessToken"
+      - get:
+          url: "/api/admin/orders"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      - get:
+          url: "/api/admin/products"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      - get:
+          url: "/api/admin/users"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+
+  - name: "Health Checks"
+    weight: 5
+    flow:
+      - get:
+          url: "/health"
+      - get:
+          url: "/api/products?limit=1"
+

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm - EasyBuy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom Theme -->
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag"></i>
+                EasyBuy
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="products.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Liên hệ</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Bar -->
+                <form class="navbar-search me-3" onsubmit="performSearch(event)">
+                    <div class="position-relative">
+                        <input class="form-control" type="search" placeholder="Tìm kiếm sản phẩm..." id="navSearchInput">
+                        <button class="btn btn-light" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- User Actions -->
+                <div class="navbar-actions d-flex gap-2">
+                    <a href="cart.html" class="btn btn-outline-light">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger" id="cartCount">0</span>
+                    </a>
+                    <a href="login-simple.html" class="btn btn-outline-light" id="loginBtn" style="display: none;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span class="d-none d-md-inline ms-1">Đăng nhập</span>
+                    </a>
+                    <div class="dropdown" id="userDropdown" style="display: none;">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="d-none d-md-inline ms-1" id="userName">Tài khoản</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user me-2"></i>Tài khoản</a></li>
+                            <li><a class="dropdown-item" href="orders.html"><i class="fas fa-shopping-bag me-2"></i>Đơn hàng</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <section class="breadcrumb-section" style="margin-top: 76px;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sản phẩm</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="py-4">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Filter Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card-custom mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-4"><i class="fas fa-filter me-2"></i>Bộ lọc</h5>
+                            
+                            <!-- Search Filter -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Tìm kiếm</label>
+                                <input type="text" class="form-control" id="filterSearch" placeholder="Nhập tên sản phẩm...">
+                                                </div>
+                            
+                            <!-- Category Filter -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Danh mục</label>
+                                <div id="categoryFilters" class="filter-options">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="category" value="" id="catAll" checked>
+                                        <label class="form-check-label" for="catAll">Tất cả</label>
+                                    </div>
+                                </div>
+                                            </div>
+                            
+                            <!-- Brand Filter -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Thương hiệu</label>
+                                <div id="brandFilters" class="filter-options">
+                                    <!-- Will be populated by JS -->
+                                </div>
+                                            </div>
+                            
+                                            <!-- Price Range -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Khoảng giá</label>
+                                <div class="row g-2 mb-3">
+                                                    <div class="col-6">
+                                                        <input type="number" class="form-control" id="minPrice" placeholder="Từ" min="0">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <input type="number" class="form-control" id="maxPrice" placeholder="Đến" min="0">
+                                                    </div>
+                                                </div>
+                                <div class="filter-options">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="priceRange" value="" id="priceAll" checked>
+                                        <label class="form-check-label" for="priceAll">Tất cả</label>
+                                            </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="priceRange" value="0-500000" id="price1">
+                                        <label class="form-check-label" for="price1">Dưới 500.000đ</label>
+                                        </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="priceRange" value="500000-1000000" id="price2">
+                                        <label class="form-check-label" for="price2">500.000đ - 1tr</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="priceRange" value="1000000-5000000" id="price3">
+                                        <label class="form-check-label" for="price3">1tr - 5tr</label>
+                                </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="priceRange" value="5000000-" id="price4">
+                                        <label class="form-check-label" for="price4">Trên 5tr</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Stock Filter -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="inStockOnly">
+                                    <label class="form-check-label fw-bold" for="inStockOnly">
+                                        Chỉ hiển thị còn hàng
+                                    </label>
+                            </div>
+                        </div>
+                        
+                            <!-- Action Buttons -->
+                            <button class="btn btn-primary w-100 mb-2" onclick="applyFilters()">
+                                <i class="fas fa-check me-2"></i>Áp dụng
+                            </button>
+                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-redo me-2"></i>Đặt lại
+                            </button>
+                        </div>
+                    </div>
+                        </div>
+                
+                <!-- Products Grid -->
+                <div class="col-lg-9">
+                    <div class="card-custom">
+                        <div class="card-body">
+                            <!-- Products Header -->
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                                <div>
+                                    <h4 class="mb-1" id="pageTitle">Tất cả sản phẩm</h4>
+                                    <p class="text-muted mb-0" id="productsCount">Đang tải...</p>
+                        </div>
+                                
+                                <select class="form-select" style="width: auto; min-width: 200px;" id="sortSelect" onchange="sortProducts()">
+                                    <option value="created_desc">Mới nhất</option>
+                                    <option value="name_asc">Tên: A-Z</option>
+                                    <option value="name_desc">Tên: Z-A</option>
+                                    <option value="price_asc">Giá: Thấp → Cao</option>
+                                    <option value="price_desc">Giá: Cao → Thấp</option>
+                                    <option value="rating_desc">Đánh giá cao</option>
+                                </select>
+                    </div>
+
+                            <!-- Active Filters -->
+                            <div id="activeFilters" class="mb-3"></div>
+                            
+                            <!-- Loading -->
+                            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                                <div class="spinner-border text-primary" role="status"></div>
+                                <p class="mt-3 text-muted">Đang tải sản phẩm...</p>
+                    </div>
+
+                    <!-- Products Grid -->
+                            <div class="row g-4" id="productsGrid">
+                        <!-- Products will be loaded here -->
+                    </div>
+
+                    <!-- No Results -->
+                    <div id="noResults" class="text-center py-5" style="display: none;">
+                                <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <h5>Không tìm thấy sản phẩm</h5>
+                                <p class="text-muted">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                                <button class="btn btn-primary" onclick="clearFilters()">
+                                    <i class="fas fa-redo me-2"></i>Đặt lại bộ lọc
+                        </button>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <nav class="mt-4" id="paginationNav" style="display: none;">
+                                <ul class="pagination justify-content-center" id="pagination"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-custom">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5><i class="fas fa-shopping-bag me-2"></i>EasyBuy</h5>
+                    <p class="text-muted mb-3">Cửa hàng đồ gia dụng trực tuyến uy tín hàng đầu Việt Nam</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Về EasyBuy</h6>
+                    <a href="#">Giới thiệu</a>
+                    <a href="#">Tuyển dụng</a>
+                    <a href="#">Tin tức</a>
+                    <a href="#">Liên hệ</a>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Hỗ trợ</h6>
+                    <a href="#">Hướng dẫn mua hàng</a>
+                    <a href="#">Chính sách đổi trả</a>
+                    <a href="#">Bảo hành</a>
+                    <a href="#">FAQ</a>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Tài khoản</h6>
+                    <a href="login.html">Đăng nhập</a>
+                    <a href="register.html">Đăng ký</a>
+                    <a href="profile.html">Tài khoản</a>
+                    <a href="orders.html">Đơn hàng</a>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Liên hệ</h6>
+                    <p class="text-muted mb-1"><i class="fas fa-phone me-2"></i>1900 1234</p>
+                    <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>info@easybuy.com</p>
+                    <p class="text-muted mb-1"><i class="fas fa-map-marker-alt me-2"></i>Hà Nội, VN</p>
+                </div>
+            </div>
+            <hr class="my-4 bg-secondary">
+            <div class="text-center">
+                <p class="text-muted mb-0">&copy; 2025 EasyBuy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Auth Manager -->
+    <script src="assets/js/auth.js"></script>
+    
+    <script>
+        const API_URL = window.location.origin;
+        let currentPage = 1;
+        let currentFilters = {
+            search: '',
+            category: '',
+            brand: [],
+            minPrice: '',
+            maxPrice: '',
+            sort: 'created_desc',
+            inStockOnly: false
+        };
+        let categoriesData = [];
+        let brandsData = [];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadBrands();
+            loadProducts();
+            loadCartCount();
+            checkUserAuth();
+            
+            // Event listeners
+            document.getElementById('filterSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') applyFilters();
+            });
+            
+            document.querySelectorAll('input[name="priceRange"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value) {
+                        const [min, max] = this.value.split('-');
+                        document.getElementById('minPrice').value = min || '';
+                        document.getElementById('maxPrice').value = max || '';
+                    }
+                });
+            });
+        });
+        
+        // Check user authentication
+        function checkUserAuth() {
+            const token = localStorage.getItem('accessToken');
+            const loginBtn = document.getElementById('loginBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            const userName = document.getElementById('userName');
+            
+            console.log('🔍 Checking auth, token:', token ? 'Present' : 'Missing');
+            
+            if (token) {
+                // User is logged in - show dropdown menu
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (userDropdown) userDropdown.style.display = 'block';
+                
+                // Try to get user info from token
+                try {
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                    if (userInfo.firstName && userName) {
+                        userName.textContent = userInfo.firstName;
+                    }
+                } catch (e) {
+                    console.log('No user info found');
+                }
+            } else {
+                // User is not logged in - show login button
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (userDropdown) userDropdown.style.display = 'none';
+                if (loginBtn) {
+                    loginBtn.href = 'login-simple.html';
+                    loginBtn.title = 'Đăng nhập';
+                }
+            }
+        }
+        
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_URL}/api/categories`);
+                if (response.ok) {
+                    categoriesData = await response.json();
+                    renderCategoryFilters();
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+        
+        function renderCategoryFilters() {
+            const container = document.getElementById('categoryFilters');
+            let html = `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="category" value="" id="catAll" checked>
+                    <label class="form-check-label" for="catAll">Tất cả</label>
+                </div>
+            `;
+            
+            categoriesData.forEach(cat => {
+                html += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="category" value="${cat.id}" id="cat${cat.id}">
+                        <label class="form-check-label" for="cat${cat.id}">${cat.name}</label>
+                        </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Load brands
+        async function loadBrands() {
+            try {
+                const response = await fetch(`${API_URL}/api/brands`);
+                if (response.ok) {
+                    brandsData = await response.json();
+                    renderBrandFilters();
+                }
+            } catch (error) {
+                console.error('Error loading brands:', error);
+            }
+        }
+        
+        function renderBrandFilters() {
+            const container = document.getElementById('brandFilters');
+            let html = '';
+            
+            brandsData.forEach(brand => {
+                html += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="${brand.id}" id="brand${brand.id}">
+                        <label class="form-check-label" for="brand${brand.id}">${brand.name}</label>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Load products
+        async function loadProducts() {
+            showLoading(true);
+            
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    limit: 12
+                });
+                
+                if (currentFilters.search) params.append('search', currentFilters.search);
+                if (currentFilters.category) params.append('category_id', currentFilters.category);
+                
+                const response = await fetch(`${API_URL}/api/products?${params}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    let products = data.products || [];
+                    
+                    // Apply client-side filters
+                    products = applyClientFilters(products);
+                    
+                    // Sort products
+                    products = sortProductsArray(products, currentFilters.sort);
+                    
+                    renderProducts(products);
+                    updateProductsCount(products.length);
+                    renderActiveFilters();
+                } else {
+                    showNoResults();
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showNoResults();
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function applyClientFilters(products) {
+            let filtered = products;
+            
+            // Brand filter
+            if (currentFilters.brand.length > 0) {
+                filtered = filtered.filter(p => currentFilters.brand.includes(p.brand_id));
+            }
+            
+            // Price range filter
+            if (currentFilters.minPrice || currentFilters.maxPrice) {
+                const min = parseFloat(currentFilters.minPrice) || 0;
+                const max = parseFloat(currentFilters.maxPrice) || Infinity;
+                filtered = filtered.filter(p => {
+                    const price = parseFloat(p.price);
+                    return price >= min && price <= max;
+                });
+            }
+            
+            // Stock filter
+            if (currentFilters.inStockOnly) {
+                filtered = filtered.filter(p => p.stock_quantity > 0);
+            }
+            
+            return filtered;
+        }
+        
+        function sortProductsArray(products, sortType) {
+            const sorted = [...products];
+            
+            switch(sortType) {
+                case 'price_asc':
+                    return sorted.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+                case 'price_desc':
+                    return sorted.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+                case 'name_asc':
+                    return sorted.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name_desc':
+                    return sorted.sort((a, b) => b.name.localeCompare(a.name));
+                case 'rating_desc':
+                    return sorted.sort((a, b) => parseFloat(b.rating_average || 0) - parseFloat(a.rating_average || 0));
+                default:
+                    return sorted;
+            }
+        }
+        
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                showNoResults();
+                return;
+            }
+            
+            document.getElementById('noResults').style.display = 'none';
+            grid.innerHTML = products.map(product => createProductCard(product)).join('');
+        }
+        
+        function createProductCard(product) {
+            const price = parseFloat(product.price);
+            const comparePrice = product.compare_price ? parseFloat(product.compare_price) : null;
+            const discount = comparePrice ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
+                const imageUrl = product.primary_image || 'assets/images/placeholder.jpg';
+            const rating = parseFloat(product.rating_average) || 0;
+            const stars = '⭐'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+            
+            let stockBadge = '';
+            if (product.stock_quantity > 0) {
+                if (product.stock_quantity <= (product.low_stock_threshold || 5)) {
+                    stockBadge = `<span class="stock-badge stock-low">Còn ${product.stock_quantity}</span>`;
+                } else {
+                    stockBadge = '<span class="stock-badge stock-in">Còn hàng</span>';
+                }
+            } else {
+                stockBadge = '<span class="stock-badge stock-out">Hết hàng</span>';
+            }
+            
+            return `
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="product-card fade-in">
+                        <div class="product-image-wrapper">
+                            <img src="${imageUrl}" alt="${product.name}" class="product-image" onerror="this.src='assets/images/placeholder.jpg'">
+                            
+                            <div class="product-badge">
+                                ${product.is_new ? '<span class="badge-item badge-new">Mới</span>' : ''}
+                                ${discount > 0 ? `<span class="badge-item badge-sale">-${discount}%</span>` : ''}
+                                ${product.is_featured ? '<span class="badge-item badge-featured">Nổi bật</span>' : ''}
+                            </div>
+                            
+                            <div class="product-actions">
+                                <button class="action-btn" onclick="addToWishlist(${product.id})" title="Yêu thích">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <button class="action-btn" onclick="quickView(${product.id})" title="Xem nhanh">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="product-category">${product.category_name || 'Sản phẩm'}</div>
+                            <h5 class="product-title">
+                                <a href="product-detail.html?id=${product.id}">${product.name}</a>
+                            </h5>
+                            
+                            <div class="product-rating">
+                                <span class="stars">${stars}</span>
+                                <span class="rating-count">(${product.rating_count || 0})</span>
+                        </div>
+                            
+                            ${stockBadge}
+                            
+                            <div class="product-price-section">
+                                <div class="product-price">
+                                    ${formatPrice(price)}
+                                    ${comparePrice ? `<span class="product-price-old">${formatPrice(comparePrice)}</span>` : ''}
+                        </div>
+                        </div>
+                        </div>
+                        
+                        <div class="product-footer">
+                            <button class="btn-add-cart" onclick="addToCart(${product.id})" ${product.stock_quantity === 0 ? 'disabled' : ''}>
+                                <i class="fas fa-shopping-cart"></i>
+                                ${product.stock_quantity === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
+                            </button>
+                            <button class="btn-quick-view" onclick="quickView(${product.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(price);
+        }
+        
+        function applyFilters() {
+            currentFilters.search = document.getElementById('filterSearch').value.trim();
+            currentFilters.category = document.querySelector('input[name="category"]:checked')?.value || '';
+            currentFilters.minPrice = document.getElementById('minPrice').value;
+            currentFilters.maxPrice = document.getElementById('maxPrice').value;
+            currentFilters.inStockOnly = document.getElementById('inStockOnly').checked;
+            
+            // Get selected brands
+            const selectedBrands = Array.from(document.querySelectorAll('#brandFilters input[type="checkbox"]:checked'))
+                .map(cb => parseInt(cb.value));
+            currentFilters.brand = selectedBrands;
+            
+            currentPage = 1;
+            loadProducts();
+        }
+        
+        function clearFilters() {
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.querySelector('input[name="category"][value=""]').checked = true;
+            document.querySelector('input[name="priceRange"][value=""]').checked = true;
+            document.getElementById('inStockOnly').checked = false;
+            document.querySelectorAll('#brandFilters input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('sortSelect').value = 'created_desc';
+            
+            currentFilters = {
+                search: '',
+                category: '',
+                brand: [],
+                minPrice: '',
+                maxPrice: '',
+                sort: 'created_desc',
+                inStockOnly: false
+            };
+            
+            currentPage = 1;
+            loadProducts();
+        }
+        
+        function sortProducts() {
+            currentFilters.sort = document.getElementById('sortSelect').value;
+            loadProducts();
+        }
+        
+        function performSearch(e) {
+            if (e) e.preventDefault();
+            const searchTerm = document.getElementById('navSearchInput').value.trim();
+            if (searchTerm) {
+                document.getElementById('filterSearch').value = searchTerm;
+                applyFilters();
+            }
+        }
+        
+        function renderActiveFilters() {
+            const container = document.getElementById('activeFilters');
+            let tags = [];
+            
+            if (currentFilters.search) {
+                tags.push(`<span class="badge bg-primary me-2 mb-2">Tìm: ${currentFilters.search} <i class="fas fa-times ms-1" style="cursor:pointer" onclick="removeFilter('search')"></i></span>`);
+            }
+            
+            if (currentFilters.category) {
+                const cat = categoriesData.find(c => c.id == currentFilters.category);
+                if (cat) {
+                    tags.push(`<span class="badge bg-primary me-2 mb-2">${cat.name} <i class="fas fa-times ms-1" style="cursor:pointer" onclick="removeFilter('category')"></i></span>`);
+                }
+            }
+            
+            if (currentFilters.minPrice || currentFilters.maxPrice) {
+                const minText = currentFilters.minPrice ? formatPrice(currentFilters.minPrice) : '0đ';
+                const maxText = currentFilters.maxPrice ? formatPrice(currentFilters.maxPrice) : '∞';
+                tags.push(`<span class="badge bg-primary me-2 mb-2">Giá: ${minText} - ${maxText} <i class="fas fa-times ms-1" style="cursor:pointer" onclick="removeFilter('price')"></i></span>`);
+            }
+            
+            container.innerHTML = tags.join('');
+        }
+        
+        function removeFilter(type) {
+            switch(type) {
+                case 'search':
+                    document.getElementById('filterSearch').value = '';
+                    break;
+                case 'category':
+                    document.querySelector('input[name="category"][value=""]').checked = true;
+                    break;
+                case 'price':
+                    document.getElementById('minPrice').value = '';
+                    document.getElementById('maxPrice').value = '';
+                    break;
+            }
+            applyFilters();
+        }
+        
+        function updateProductsCount(count) {
+            document.getElementById('productsCount').textContent = `Tìm thấy ${count} sản phẩm`;
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            document.getElementById('productsGrid').style.display = show ? 'none' : 'block';
+        }
+        
+        function showNoResults() {
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('productsGrid').innerHTML = '';
+            updateProductsCount(0);
+        }
+        
+        // Cart functions
+        async function addToCart(productId) {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+                    window.location.href = 'login-simple.html';
+                    return;
+                }
+                
+                const response = await fetch(`${API_URL}/api/cart/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: 1
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ Đã thêm sản phẩm vào giỏ hàng!');
+                    loadCartCount();
+                } else {
+                    alert('❌ Không thể thêm sản phẩm vào giỏ hàng');
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                alert('Đã xảy ra lỗi khi thêm vào giỏ hàng');
+            }
+        }
+        
+        async function loadCartCount() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    document.getElementById('cartCount').textContent = '0';
+                    return;
+                }
+                
+                const response = await fetch(`${API_URL}/api/cart`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.items?.length || 0;
+                    document.getElementById('cartCount').textContent = count;
+                }
+            } catch (error) {
+                console.error('Error loading cart count:', error);
+            }
+        }
+        
+        function addToWishlist(productId) {
+            alert('Chức năng yêu thích đang được phát triển');
+        }
+        
+        function quickView(productId) {
+            window.location.href = `product-detail.html?id=${productId}`;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý đơn hàng - Admin Panel</title>
+  <link rel="icon" href="/assets/images/favicon.ico" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
+  <style>
+    .sidebar{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;position:fixed;top:0;left:0;width:250px;z-index:1000}
+    .sidebar .nav-link{color:#fff;padding:12px 20px;border-radius:8px;margin:5px 10px}
+    .sidebar .nav-link.active,.sidebar .nav-link:hover{background-color:rgba(255,255,255,.2);color:#fff}
+    .main-content{margin-left:250px;padding:20px}
+    .stats-card{background:#fff;border-radius:15px;padding:25px;box-shadow:0 4px 6px rgba(0,0,0,.1);border:none}
+    .table-container{background:#fff;border-radius:15px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+    .modal-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
+    
+    /* Dropdown status select styling */
+    .form-select-sm {
+      min-width: 200px;
+      font-size: 0.875rem;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .form-select-sm:hover {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.1rem rgba(102, 126, 234, 0.25);
+    }
+    .form-select-sm:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+    .form-select-sm option {
+      padding: 8px;
+      font-weight: 500;
+    }
+    .form-select-sm option[value="pending"] {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .form-select-sm option[value="confirmed"] {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .form-select-sm option[value="delivering"] {
+      background-color: #cfe2ff;
+      color: #084298;
+    }
+    .form-select-sm option[value="delivered"] {
+      background-color: #d1e7dd;
+      color: #0f5132;
+    }
+    .form-select-sm option[value="completed"] {
+      background-color: #d1e7dd;
+      color: #155724;
+      font-weight: 600;
+    }
+    .form-select-sm option[value="cancelled"] {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+  </head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="p-3 text-white"><h4 class="mb-4"><i class="fas fa-crown me-2"></i>Admin Panel</h4></div>
+    <nav class="nav flex-column">
+      <a class="nav-link" href="admin-products.html"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+      <a class="nav-link" href="admin-users.html"><i class="fas fa-users me-2"></i>Quản lý người dùng</a>
+      <a class="nav-link" href="admin-products.html"><i class="fas fa-box me-2"></i>Quản lý sản phẩm</a>
+      <a class="nav-link active" href="admin-orders.html"><i class="fas fa-shopping-bag me-2"></i>Quản lý đơn hàng</a>
+      <a class="nav-link" href="admin-categories.html"><i class="fas fa-tags me-2"></i>Quản lý danh mục</a>
+      <a class="nav-link" href="admin-reviews.html"><i class="fas fa-star me-2"></i>Đánh giá</a>
+      <a class="nav-link" href="admin-statistics.html"><i class="fas fa-chart-line me-2"></i>Thống kê</a>
+      <a class="nav-link" href="admin-settings.html"><i class="fas fa-cog me-2"></i>Cài đặt</a>
+      <hr class="text-white">
+      <a class="nav-link" href="index.html"><i class="fas fa-home me-2"></i>Về trang chủ</a>
+      <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a>
+    </nav>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="mb-0">Quản lý đơn hàng</h2>
+      <div class="d-flex align-items-center">
+        <span class="me-3">Xin chào, Admin!</span>
+        <div class="dropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user me-2"></i>Admin
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3"><div class="stats-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted mb-2">TỔNG ĐƠN</h6><h3 id="ordersStatAll">0</h3></div><i class="fas fa-list text-primary" style="font-size:3rem"></i></div></div></div>
+      <div class="col-md-2 mb-3"><div class="stats-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted mb-2">CHỜ XÁC NHẬN</h6><h3 class="text-warning" id="ordersStatPending">0</h3></div><i class="fas fa-clock text-warning" style="font-size:2.5rem"></i></div></div></div>
+      <div class="col-md-2 mb-3"><div class="stats-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted mb-2">ĐÃ XÁC NHẬN</h6><h3 class="text-info" id="ordersStatConfirmed">0</h3></div><i class="fas fa-check-circle text-info" style="font-size:2.5rem"></i></div></div></div>
+      <div class="col-md-2 mb-3"><div class="stats-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted mb-2">ĐANG GIAO</h6><h3 class="text-primary" id="ordersStatDelivering">0</h3></div><i class="fas fa-shipping-fast text-primary" style="font-size:2.5rem"></i></div></div></div>
+      <div class="col-md-3 mb-3"><div class="stats-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted mb-2">HOÀN TẤT</h6><h3 class="text-success" id="ordersStatCompleted">0</h3></div><i class="fas fa-check-double text-success" style="font-size:2.5rem"></i></div></div></div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="search-container mb-3">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Tìm kiếm</label>
+          <input id="ordersSearch" class="form-control" placeholder="Tìm theo email, mã đơn...">
+        </div>
+        <div class="col-md-3 ms-auto">
+          <label class="form-label">Trạng thái</label>
+          <select id="ordersStatusFilter" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="pending">Chờ xác nhận</option>
+            <option value="confirmed">Đã xác nhận</option>
+            <option value="delivering">Đang giao hàng</option>
+            <option value="delivered">Đã giao hàng</option>
+            <option value="completed">Hoàn tất</option>
+            <option value="cancelled">Đã hủy</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders table -->
+    <div class="table-container">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Danh sách đơn hàng</h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover" id="ordersTable">
+          <thead class="table-light">
+            <tr>
+              <th>Mã đơn</th>
+              <th>Khách hàng</th>
+              <th>Email</th>
+              <th>Tổng tiền</th>
+              <th>Trạng thái</th>
+              <th>Ngày tạo</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Chi tiết đơn hàng</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body"><div id="orderDetail"></div></div>
+        <div class="modal-footer"><button id="primaryAction" class="btn btn-primary"></button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function logout(){localStorage.removeItem('accessToken');window.location.href='login-simple.html'}
+    async function api(endpoint,options={}){const token=localStorage.getItem('accessToken');const res=await fetch(endpoint,{headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},...options});if(!res.ok) throw new Error(await res.text());return await res.json()}
+    function badge(s){
+      const m={
+        pending:'bg-warning',
+        confirmed:'bg-info',
+        delivering:'bg-primary',
+        delivered:'bg-success',
+        completed:'bg-success',
+        cancelled:'bg-danger'
+      };
+      const t={
+        pending:'Chờ xác nhận',
+        confirmed:'Đã xác nhận',
+        delivering:'Đang giao hàng',
+        delivered:'Đã giao hàng',
+        completed:'Hoàn tất',
+        cancelled:'Đã hủy'
+      };
+      return `<span class="badge ${m[s]||'bg-secondary'}">${t[s]||s}</span>`;
+    }
+    
+    // Helper: Get status label
+    function getStatusLabel(status) {
+      const labels = {
+        pending: 'Chờ xác nhận',
+        confirmed: 'Đã xác nhận',
+        delivering: 'Đang giao hàng',
+        delivered: 'Đã giao hàng',
+        completed: 'Hoàn tất',
+        cancelled: 'Đã hủy'
+      };
+      return labels[status] || status;
+    }
+    
+    // Helper: Get next valid statuses based on current status
+    function getNextStatuses(currentStatus) {
+      const transitions = {
+        'pending': ['confirmed', 'cancelled'],
+        'confirmed': ['delivering', 'cancelled'],
+        'delivering': ['delivered'],
+        'delivered': ['completed'],
+        'completed': [],
+        'cancelled': []
+      };
+      return transitions[currentStatus] || [];
+    }
+
+    async function loadOrders(){
+      try {
+        console.log('🔄 Loading orders...');
+        const status=document.getElementById('ordersStatusFilter').value; 
+        const q=(document.getElementById('ordersSearch').value||'').toLowerCase();
+        
+        const data=await api(`/api/admin/orders${status?`?status=${status}`:''}`); 
+        console.log('📦 Orders data:', data);
+        
+        const orders=data.success?data.orders:data; 
+        console.log('📋 Orders array:', orders);
+        
+        // stats
+        const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v};
+        set('ordersStatAll', orders.length); 
+        set('ordersStatPending', orders.filter(o=>o.status==='pending').length); 
+        set('ordersStatConfirmed', orders.filter(o=>o.status==='confirmed').length); 
+        set('ordersStatDelivering', orders.filter(o=>o.status==='delivering').length); 
+        set('ordersStatCompleted', orders.filter(o=>o.status==='completed').length);
+        
+        const fmt=n=>new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(n||0);
+        const tbody=document.getElementById('ordersBody');
+        const filtered=(orders||[]).filter(o=>!q || (String(o.id).includes(q) || (o.email||'').toLowerCase().includes(q)));
+        
+        console.log('🔍 Filtered orders:', filtered);
+        
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-4">
+                <i class="fas fa-shopping-bag fa-2x text-muted mb-2"></i>
+                <div class="text-muted">Không có đơn hàng nào</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+        
+        tbody.innerHTML=filtered.map(o=>{
+          try {
+            const currentStatus = o.status || 'pending';
+            const statusLabel = getStatusLabel(currentStatus);
+            const nextStatuses = getNextStatuses(currentStatus);
+            
+            return `
+            <tr>
+              <td>#${o.id}</td>
+              <td>${(o.first_name||'')+' '+(o.last_name||'')}</td>
+              <td>${o.email||''}</td>
+              <td class="text-primary fw-semibold">${fmt(o.total_amount)}</td>
+              <td>${badge(currentStatus)}</td>
+              <td>${new Date(o.created_at).toLocaleString('vi-VN')}</td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-info" onclick="view(${o.id})" title="Xem chi tiết">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <select class="form-select form-select-sm" style="width: auto;" onchange="updateOrderStatus(${o.id}, this.value, this, '${currentStatus}')">
+                    <option value="${currentStatus}" selected disabled>${statusLabel}</option>
+                    ${nextStatuses.map(s => `<option value="${s}">${getStatusLabel(s)}</option>`).join('')}
+                  </select>
+                  ${(currentStatus === 'pending' || currentStatus === 'cancelled') ? `
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder(${o.id})" title="Xóa đơn hàng">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>`;
+          } catch (error) {
+            console.error('Error rendering order:', o, error);
+            return `
+            <tr>
+              <td>#${o.id}</td>
+              <td>Error</td>
+              <td>Error</td>
+              <td>Error</td>
+              <td>Error</td>
+              <td>Error</td>
+              <td>Error</td>
+            </tr>`;
+          }
+        }).join('');
+      } catch (error) {
+        console.error('❌ Error loading orders:', error);
+        const tbody = document.getElementById('ordersBody');
+        if (tbody) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <div class="text-danger">Lỗi tải dữ liệu: ${error.message}</div>
+                <button class="btn btn-primary btn-sm mt-2" onclick="loadOrders()">Thử lại</button>
+              </td>
+            </tr>
+          `;
+        }
+      }
+    }
+
+    async function setStatus(id,status,refreshModal=false){await api(`/api/admin/orders/${id}/status`,{method:'PUT',body:JSON.stringify({status})}); await loadOrders(); if(refreshModal) view(id)}
+    
+    async function updateOrderStatus(id, newStatus, selectElement, currentStatus) {
+      if (!newStatus || newStatus === '') {
+        return; // Nếu chọn option rỗng, không làm gì
+      }
+      
+      // Kiểm tra nếu giống trạng thái hiện tại
+      if (newStatus === currentStatus) {
+        return;
+      }
+      
+      const statusNames = {
+        'pending': 'Chờ xác nhận',
+        'confirmed': 'Đã xác nhận',
+        'delivering': 'Đang giao hàng',
+        'delivered': 'Đã giao hàng',
+        'completed': 'Hoàn tất',
+        'cancelled': 'Đã hủy'
+      };
+      
+      // Kiểm tra flow hợp lệ - chỉ đi tiến, không lùi lại
+      const validTransitions = {
+        'pending': ['confirmed', 'cancelled'],      // Chỉ có thể: xác nhận hoặc hủy
+        'confirmed': ['delivering', 'cancelled'],   // Chỉ có thể: giao hàng hoặc hủy
+        'delivering': ['delivered'],                // Chỉ có thể: đã giao (không hủy được khi đang giao)
+        'delivered': ['completed'],                 // Chỉ có thể: hoàn tất
+        'completed': [],                            // Không thể thay đổi
+        'cancelled': []                             // Không thể thay đổi
+      };
+      
+      // Kiểm tra chuyển đổi có hợp lệ không
+      if (!validTransitions[currentStatus]?.includes(newStatus)) {
+        let flowMsg = `⚠️ Không thể chuyển từ "${statusNames[currentStatus]}" sang "${statusNames[newStatus]}".`;
+        
+        if (currentStatus === 'completed' || currentStatus === 'cancelled') {
+          flowMsg += `\n\n❌ Đơn hàng đã ${currentStatus === 'completed' ? 'hoàn tất' : 'bị hủy'} và không thể thay đổi trạng thái.`;
+        } else if (currentStatus === 'delivering' && newStatus === 'cancelled') {
+          flowMsg += `\n\n❌ Không thể hủy đơn hàng khi đang giao. Chỉ có thể chuyển sang "Đã giao hàng".`;
+        } else {
+          flowMsg += `\n\n✅ Flow hợp lệ từ "${statusNames[currentStatus]}":\n`;
+          const validNext = validTransitions[currentStatus];
+          if (validNext.length > 0) {
+            validNext.forEach(s => {
+              flowMsg += `  → ${statusNames[s]}\n`;
+            });
+          } else {
+            flowMsg += `  (Không thể thay đổi)\n`;
+          }
+        }
+        
+        alert(flowMsg);
+        loadOrders();
+        return;
+      }
+      
+      // Confirm message phù hợp với từng trạng thái
+      let confirmMsg = '';
+      if (newStatus === 'confirmed') {
+        confirmMsg = `📦 Xác nhận đơn hàng #${id}?\n\n- Kiểm tra hàng còn trong kho\n- Đơn sẽ chuyển sang "Đã xác nhận"`;
+      } else if (newStatus === 'delivering') {
+        confirmMsg = `🚚 Bắt đầu giao hàng đơn #${id}?\n\n- Đơn sẽ chuyển sang "Đang giao hàng"`;
+      } else if (newStatus === 'delivered') {
+        confirmMsg = `✅ Xác nhận khách đã nhận hàng và thanh toán?\n\n- Đơn hàng #${id} đã được giao thành công\n- Đơn sẽ chuyển sang "Đã giao hàng"`;
+      } else if (newStatus === 'completed') {
+        confirmMsg = `✨ Hoàn tất đơn hàng #${id}?\n\n- Đơn sẽ được đánh dấu "Hoàn tất"\n- Khách hàng có thể đánh giá sản phẩm`;
+      } else if (newStatus === 'cancelled') {
+        confirmMsg = `❌ Hủy đơn hàng #${id}?\n\nHành động này không thể hoàn tác!`;
+      }
+      
+      if (!confirm(confirmMsg)) {
+        loadOrders();
+        return;
+      }
+      
+      try {
+        console.log(`🔄 Updating order #${id} from "${currentStatus}" to "${newStatus}"`);
+        
+        const response = await api(`/api/admin/orders/${id}/status`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: newStatus })
+        });
+        
+        console.log('✅ API Response:', response);
+        
+        // Hiển thị thông báo thành công
+        let successMsg = '';
+        if (newStatus === 'confirmed') {
+          successMsg = `✅ Đã xác nhận đơn hàng #${id}. Có thể bắt đầu giao hàng.`;
+        } else if (newStatus === 'delivering') {
+          successMsg = `🚚 Đơn hàng #${id} đang được giao.`;
+        } else if (newStatus === 'delivered') {
+          successMsg = `✅ Đơn hàng #${id} đã giao thành công. Có thể hoàn tất đơn.`;
+        } else if (newStatus === 'completed') {
+          successMsg = `✨ Đơn hàng #${id} đã hoàn tất. Khách có thể đánh giá.`;
+        } else if (newStatus === 'cancelled') {
+          successMsg = `❌ Đơn hàng #${id} đã bị hủy.`;
+        }
+        
+        alert(successMsg);
+        
+        // Reload danh sách với delay để đảm bảo server đã cập nhật
+        console.log('🔄 Reloading orders after status update...');
+        setTimeout(async () => {
+          await loadOrders();
+        }, 500);
+        
+      } catch (error) {
+        console.error('❌ Error updating order status:', error);
+        alert('❌ Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại.\n\n' + error.message);
+        loadOrders();
+      }
+    }
+
+    function openCancel(id){
+      const reasons=['Khách yêu cầu hủy','Sai thông tin đơn hàng','Hết hàng/Không đáp ứng','Nghi ngờ gian lận','Lý do khác'];
+      const html=reasons.map((r,i)=>`<label class='list-group-item'><input class='form-check-input me-2' type='radio' name='adminCancelReason' value='${r}' ${i===0?'checked':''}>${r}</label>`).join('');
+      document.getElementById('orderDetail').innerHTML=`<div class='mb-3'>Chọn lý do hủy:</div><div class='list-group'>${html}</div>`;
+      const btn=document.getElementById('primaryAction');
+      btn.textContent='Xác nhận hủy';
+      btn.className='btn btn-danger';
+      btn.onclick=async()=>{
+        const selected=document.querySelector("input[name='adminCancelReason']:checked");
+        const reason=selected?selected.value:'';
+        await api(`/api/admin/orders/${id}/cancel`,{method:'POST',body:JSON.stringify({reason})});
+        await loadOrders();
+        const modalEl=document.getElementById('orderModal');
+        bootstrap.Modal.getInstance(modalEl)?.hide();
+      };
+      const m=new bootstrap.Modal(document.getElementById('orderModal'));
+      m.show();
+      // fix aria-hidden warning by ensuring focus management after show
+      const modalEl=document.getElementById('orderModal');
+      modalEl.removeAttribute('aria-hidden');
+      modalEl.focus({preventScroll:true});
+    }
+
+    async function view(id){
+      const data=await api(`/api/admin/orders/${id}`); 
+      const o=data.order, u=data.user, items=data.items||[]; 
+      const fmt=n=>new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(n||0); 
+      const st={
+        pending:'Chờ xác nhận',
+        confirmed:'Đã xác nhận',
+        delivering:'Đang giao hàng',
+        delivered:'Đã giao hàng',
+        completed:'Hoàn tất',
+        cancelled:'Đã hủy'
+      }; 
+      const sa=o.shipping_address||{}; 
+      document.getElementById('orderDetail').innerHTML=`<div class="row g-3"><div class="col-md-6"><div class="card h-100"><div class="card-body"><h6 class="mb-3">Thông tin đơn</h6><div>Mã đơn: #${o.id}</div><div>Trạng thái: <strong>${st[o.status]||o.status}</strong></div><div>Tổng tiền: <strong class="text-primary">${fmt(o.total_amount)}</strong></div><div>Ngày tạo: ${new Date(o.created_at).toLocaleString('vi-VN')}</div></div></div></div><div class="col-md-6"><div class="card h-100"><div class="card-body"><h6 class="mb-3">Thông tin khách</h6><div>${u?`${u.first_name||''} ${u.last_name||''}`:''} (${u?.email||''})</div><div>Điện thoại: ${u?.phone||''}</div></div></div></div><div class="col-12"><div class="card"><div class="card-body"><h6 class="mb-3">Địa chỉ nhận hàng</h6><div>${[sa.recipientName,sa.phone].filter(Boolean).join(' - ')}</div><div>${[sa.addressLine1,sa.addressLine2].filter(Boolean).join(', ')}</div><div class="text-muted">${[sa.ward,sa.state,sa.city,sa.postalCode,sa.country].filter(Boolean).join(', ')}</div></div></div></div><div class="col-12"><div class="card"><div class="card-body"><h6 class="mb-3">Sản phẩm</h6>${items.map(it=>`<div class='d-flex justify-content-between border-bottom py-2'><div class='d-flex align-items-center'><img src='${it.image_url}' class='rounded me-2' style='width:48px;height:48px;object-fit:cover;'><div><div class='fw-semibold'>${it.product_name}</div><small class='text-muted'>SKU: ${it.product_sku||''}</small></div></div><div class='text-end'><div>${it.quantity} x ${fmt(it.unit_price)}</div><div class='fw-semibold text-primary'>${fmt(it.total_price)}</div></div></div>`).join('')}</div></div></div></div>`; 
+      
+      const btn=document.getElementById('primaryAction'); 
+      if(o.status==='pending'){
+        btn.textContent='Xác nhận đơn hàng'; 
+        btn.onclick=()=>setStatus(id,'confirmed',true); 
+        btn.className='btn btn-info';
+      } else if(o.status==='confirmed'){
+        btn.textContent='Bắt đầu giao hàng'; 
+        btn.onclick=()=>setStatus(id,'delivering',true); 
+        btn.className='btn btn-primary';
+      } else if(o.status==='delivering'){
+        btn.textContent='Đã giao hàng'; 
+        btn.onclick=()=>setStatus(id,'delivered',true); 
+        btn.className='btn btn-success';
+      } else if(o.status==='delivered'){
+        btn.textContent='Hoàn tất đơn hàng'; 
+        btn.onclick=()=>setStatus(id,'completed',true); 
+        btn.className='btn btn-success';
+      } else if(o.status==='completed'){
+        btn.textContent='Đã hoàn tất'; 
+        btn.onclick=null; 
+        btn.className='btn btn-secondary disabled';
+      } else {
+        btn.textContent='Đã hủy'; 
+        btn.onclick=null; 
+        btn.className='btn btn-secondary disabled';
+      }
+      
+      const m=new bootstrap.Modal(document.getElementById('orderModal')); 
+      m.show(); 
+      const modalEl=document.getElementById('orderModal'); 
+      modalEl.removeAttribute('aria-hidden'); 
+      modalEl.focus({preventScroll:true});
+    }
+
+    // Delete order function
+    async function deleteOrder(orderId) {
+      if (!confirm(`🗑️ Bạn có chắc chắn muốn XÓA VĨNH VIỄN đơn hàng #${orderId}?\n\n⚠️ Hành động này không thể hoàn tác!`)) {
+        return;
+      }
+      
+      try {
+        console.log('🗑️ Deleting order:', orderId);
+        
+        const token = getAuthToken();
+        const response = await fetch(`/api/admin/orders/${orderId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Delete result:', result);
+          alert(`✅ Xóa đơn hàng #${orderId} thành công!`);
+          loadOrders();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ Delete error:', errorData);
+          
+          if (response.status === 400) {
+            alert(`❌ Không thể xóa đơn hàng: ${errorData.error}\n\nTrạng thái hiện tại: ${errorData.currentStatus}`);
+          } else {
+            alert(`❌ Có lỗi xảy ra khi xóa đơn hàng: ${errorData.error || 'Unknown error'}`);
+          }
+        }
+        
+      } catch (error) {
+        console.error('❌ Error deleting order:', error);
+        alert('❌ Có lỗi xảy ra khi xóa đơn hàng. Vui lòng thử lại.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{document.getElementById('ordersStatusFilter').addEventListener('change',loadOrders); document.getElementById('ordersSearch').addEventListener('input',loadOrders); loadOrders()});
+  </script>
+</body>
+</html>

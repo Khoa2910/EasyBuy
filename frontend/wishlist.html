@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách yêu thích - EasyBuy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-home me-2"></i>EasyBuy
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Danh mục
+                        </a>
+                        <ul class="dropdown-menu" id="categoriesDropdown">
+                            <!-- Categories will be loaded here -->
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Liên hệ</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Bar -->
+                <form class="d-flex me-3" id="searchForm">
+                    <div class="input-group">
+                        <input class="form-control" type="search" placeholder="Tìm kiếm sản phẩm..." id="searchInput">
+                        <button class="btn btn-outline-light" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- User Actions -->
+                <div class="d-flex align-items-center">
+                    <a href="wishlist.html" class="btn btn-outline-light me-2" title="Yêu thích">
+                        <i class="fas fa-heart"></i>
+                        <span class="badge bg-danger" id="wishlistCount">0</span>
+                    </a>
+                    <a href="cart.html" class="btn btn-outline-light me-2" title="Giỏ hàng">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger" id="cartCount">0</span>
+                    </a>
+                    
+                    <!-- Auth Dropdown (Always Visible) -->
+                    <div class="dropdown" id="authDropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="login-simple.html"><i class="fas fa-sign-in-alt me-2"></i>Đăng nhập</a></li>
+                            <li><a class="dropdown-item" href="register.html"><i class="fas fa-user-plus me-2"></i>Đăng ký</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- User Menu (Hidden by default) -->
+                    <div class="dropdown" id="userDropdown" style="display: none;">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" id="userMenu">
+                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user me-2"></i>Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="orders.html"><i class="fas fa-shopping-bag me-2"></i>Đơn hàng</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-top: 100px;">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-heart text-danger me-2"></i>Danh sách yêu thích</h2>
+                    <button class="btn btn-outline-danger" onclick="wishlist.clearWishlist()" id="clear-wishlist-btn" style="display: none;">
+                        <i class="fas fa-trash me-1"></i>Xóa tất cả
+                    </button>
+                </div>
+
+                <!-- Wishlist Items -->
+                <div id="wishlist-items">
+                    <!-- Items will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>EasyBuy</h5>
+                    <p>Nền tảng mua sắm trực tuyến uy tín, chất lượng cao với giá cả hợp lý.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-light">Trang chủ</a></li>
+                        <li><a href="/products.html" class="text-light">Sản phẩm</a></li>
+                        <li><a href="/about.html" class="text-light">Giới thiệu</a></li>
+                        <li><a href="/contact.html" class="text-light">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Hỗ trợ</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">Hướng dẫn mua hàng</a></li>
+                        <li><a href="#" class="text-light">Chính sách đổi trả</a></li>
+                        <li><a href="#" class="text-light">Bảo mật thông tin</a></li>
+                        <li><a href="#" class="text-light">Liên hệ hỗ trợ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2024 EasyBuy. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Initialize TMDT App
+        let app;
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing TMDT App for wishlist...');
+            app = new TMDTApp();
+            
+            // Check login status and update UI
+            const token = localStorage.getItem('accessToken');
+            const authDropdown = document.getElementById('authDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (token) {
+                // User is logged in - hide auth dropdown, show user menu
+                if (authDropdown) authDropdown.style.display = 'none';
+                if (userDropdown) userDropdown.style.display = 'block';
+            } else {
+                // User is not logged in - show auth dropdown, hide user menu
+                if (authDropdown) authDropdown.style.display = 'block';
+                if (userDropdown) userDropdown.style.display = 'none';
+            }
+            
+            // Load wishlist
+            if (window.app && typeof app.loadWishlist === 'function') {
+                app.loadWishlist();
+            }
+        });
+        
+        // Logout function
+        function logout() {
+            if (window.app) {
+                window.app.logout();
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+

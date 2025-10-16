@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - EasyBuy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom Theme -->
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag"></i>
+                EasyBuy
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Liên hệ</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Bar -->
+                <form class="navbar-search me-3" onsubmit="performSearch(event)">
+                    <div class="position-relative">
+                        <input class="form-control" type="search" placeholder="Tìm kiếm sản phẩm..." id="searchInput">
+                        <button class="btn btn-light" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- User Actions -->
+                <div class="navbar-actions d-flex gap-2">
+                    <a href="cart.html" class="btn btn-outline-light active">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger" id="cartCount">0</span>
+                    </a>
+                    <a href="profile.html" class="btn btn-outline-light" id="userBtn">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <section class="py-3 bg-light" style="margin-top: 76px;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="index.html">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Giỏ hàng</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h2 class="mb-4">Giỏ hàng của bạn</h2>
+                    
+                    <!-- Empty Cart -->
+                    <div id="emptyCart" class="text-center py-5" style="display: none;">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h4>Giỏ hàng trống</h4>
+                        <p class="text-muted mb-4">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+                        <a href="products.html" class="btn btn-primary">Tiếp tục mua sắm</a>
+                    </div>
+
+                    <!-- Cart Items -->
+                    <div id="cart-items">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="cart-summary">
+                        <h5 class="mb-3">Tóm tắt đơn hàng</h5>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Số lượng: <span id="cartItemCount">0</span> sản phẩm</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span id="cartSubtotal">0 ₫</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí vận chuyển:</span>
+                            <span id="shipping">0 ₫</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Thuế (10%):</span>
+                            <span id="tax">0 ₫</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Tổng cộng:</strong>
+                            <strong id="total">0 ₫</strong>
+                        </div>
+
+                        <!-- Coupon Code -->
+                        <div class="mb-3">
+                            <label for="couponCode" class="form-label">Mã giảm giá</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="couponCode" placeholder="Nhập mã giảm giá">
+                                <button class="btn btn-outline-primary" type="button" onclick="cart.applyCoupon()">
+                                    Áp dụng
+                                </button>
+                            </div>
+                            <div id="couponMessage" class="mt-2"></div>
+                        </div>
+
+                        <!-- Checkout Button -->
+                        <button class="btn btn-primary w-100 mb-3" onclick="cart.checkout()" id="checkoutBtn">
+                            <i class="fas fa-credit-card me-2"></i>Thanh toán
+                        </button>
+
+                        <!-- Continue Shopping -->
+                        <a href="products.html" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-arrow-left me-2"></i>Tiếp tục mua sắm
+                        </a>
+
+                        <!-- Security Info -->
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-shield-alt text-success me-2"></i>
+                                <small class="text-muted">Thanh toán an toàn</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-truck text-info me-2"></i>
+                                <small class="text-muted">Miễn phí vận chuyển đơn từ 500.000₫</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-undo text-warning me-2"></i>
+                                <small class="text-muted">Đổi trả trong 30 ngày</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recommended Products -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h3 class="mb-4">Sản phẩm gợi ý</h3>
+            <div class="row" id="recommendedProducts">
+                <!-- Recommended products will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-3">EasyBuy</h5>
+                    <p class="text-muted">Cửa hàng đồ gia dụng trực tuyến uy tín, cung cấp các sản phẩm chất lượng cao với giá cả hợp lý.</p>
+                    <div class="d-flex">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">Sản phẩm</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="products.html?category=1" class="text-muted text-decoration-none">Đồ dùng nhà bếp</a></li>
+                        <li><a href="products.html?category=2" class="text-muted text-decoration-none">Trang trí nội thất</a></li>
+                        <li><a href="products.html?category=3" class="text-muted text-decoration-none">Đồ dùng làm sạch</a></li>
+                        <li><a href="products.html?category=4" class="text-muted text-decoration-none">Đồ điện gia dụng</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">Hỗ trợ</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="help.html" class="text-muted text-decoration-none">Trung tâm trợ giúp</a></li>
+                        <li><a href="shipping.html" class="text-muted text-decoration-none">Vận chuyển</a></li>
+                        <li><a href="returns.html" class="text-muted text-decoration-none">Đổi trả</a></li>
+                        <li><a href="contact.html" class="text-muted text-decoration-none">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">Tài khoản</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="login.html" class="text-muted text-decoration-none">Đăng nhập</a></li>
+                        <li><a href="register.html" class="text-muted text-decoration-none">Đăng ký</a></li>
+                        <li><a href="profile.html" class="text-muted text-decoration-none">Hồ sơ</a></li>
+                        <li><a href="orders.html" class="text-muted text-decoration-none">Đơn hàng</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">Liên hệ</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-phone me-2"></i> 1900 1234</li>
+                        <li><i class="fas fa-envelope me-2"></i> info@tmdt.com</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i> Hà Nội, Việt Nam</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">&copy; 2024 EasyBuy. Tất cả quyền được bảo lưu.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="privacy.html" class="text-muted text-decoration-none me-3">Chính sách bảo mật</a>
+                    <a href="terms.html" class="text-muted text-decoration-none">Điều khoản sử dụng</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Đăng nhập</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+                        <a href="forgot-password.html">Quên mật khẩu?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/cart.js"></script>
+</body>
+</html>
+

@@ -11,6 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link href="assets/css/style.css" rel="stylesheet">
     
@@ -168,6 +170,73 @@
         .price-input input {
             padding-left: 25px;
         }
+        
+        /* Dashboard Styles */
+        .dashboard-content {
+            display: none;
+        }
+        
+        .dashboard-content.active {
+            display: block;
+        }
+        
+        .products-content {
+            display: block;
+        }
+        
+        .products-content.hidden {
+            display: none;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: transform 0.3s;
+        }
+        
+        .dashboard-stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .dashboard-stats-card .stats-icon {
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+        
+        .recent-orders-table {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .order-status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-confirmed { background-color: #d1ecf1; color: #0c5460; }
+        .status-delivering { background-color: #cce5ff; color: #004085; }
+        .status-delivered { background-color: #d4edda; color: #155724; }
+        .status-completed { background-color: #e2e3e5; color: #383d41; }
+        .status-cancelled { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
@@ -181,7 +250,7 @@
         </div>
         
         <nav class="nav flex-column">
-            <a class="nav-link" href="admin-products.html">
+            <a class="nav-link active" href="#" onclick="switchTab('dashboard')">
                 <i class="fas fa-tachometer-alt me-2"></i>
                 <span class="nav-text">Dashboard</span>
             </a>
@@ -189,7 +258,7 @@
                 <i class="fas fa-users me-2"></i>
                 <span class="nav-text">Quản lý người dùng</span>
             </a>
-            <a class="nav-link active" href="admin-products.html">
+            <a class="nav-link" href="#" onclick="switchTab('products')">
                 <i class="fas fa-box me-2"></i>
                 <span class="nav-text">Quản lý sản phẩm</span>
             </a>
@@ -229,7 +298,7 @@
     <div class="main-content" id="mainContent">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Quản lý sản phẩm</h2>
+            <h2 class="mb-0" id="pageTitle">Dashboard</h2>
             <div class="d-flex align-items-center">
                 <span class="me-3">Xin chào, Admin!</span>
                 <div class="dropdown">
@@ -245,6 +314,107 @@
                 </div>
             </div>
         </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content active" id="dashboardContent">
+            <!-- Dashboard Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-stats-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-2">TỔNG DOANH THU</h6>
+                                <h3 class="mb-0" id="totalRevenue">0 ₫</h3>
+                                <small id="revenueGrowth">+0%</small>
+                            </div>
+                            <i class="fas fa-dollar-sign stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-stats-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-2">TỔNG ĐƠN HÀNG</h6>
+                                <h3 class="mb-0" id="totalOrders">0</h3>
+                                <small id="ordersGrowth">+0%</small>
+                            </div>
+                            <i class="fas fa-shopping-bag stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-stats-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-2">NGƯỜI DÙNG</h6>
+                                <h3 class="mb-0" id="totalUsers">0</h3>
+                                <small id="usersGrowth">+0%</small>
+                            </div>
+                            <i class="fas fa-users stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-stats-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-2">SẢN PHẨM</h6>
+                                <h3 class="mb-0" id="totalProducts">0</h3>
+                                <small id="productsGrowth">+0%</small>
+                            </div>
+                            <i class="fas fa-box stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="chart-container">
+                        <h5 class="mb-3">Doanh thu 6 tháng gần nhất</h5>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="chart-container">
+                        <h5 class="mb-3">Trạng thái đơn hàng</h5>
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="recent-orders-table">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Đơn hàng gần đây</h5>
+                    <button class="btn btn-primary btn-sm" onclick="loadRecentOrders()">
+                        <i class="fas fa-sync-alt me-1"></i>Làm mới
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Content -->
+        <div class="products-content" id="productsContent">
 
         <!-- Stats Cards -->
         <div class="row mb-4">
@@ -503,6 +673,9 @@
         let categoriesData = [];
         let brandsData = [];
         let currentUser = null;
+        let dashboardData = {};
+        let charts = {};
+        let currentTab = 'dashboard';
 
         function getAuthToken() {
             // Check for accessToken from login
@@ -1030,11 +1203,249 @@
             });
         });
 
+        // Dashboard Functions
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // Update content
+            if (tabName === 'dashboard') {
+                document.getElementById('dashboardContent').classList.add('active');
+                document.getElementById('productsContent').classList.add('hidden');
+                document.getElementById('pageTitle').textContent = 'Dashboard';
+                loadDashboardData();
+            } else if (tabName === 'products') {
+                document.getElementById('dashboardContent').classList.remove('active');
+                document.getElementById('productsContent').classList.remove('hidden');
+                document.getElementById('pageTitle').textContent = 'Quản lý sản phẩm';
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    console.error('No auth token for dashboard');
+                    return;
+                }
+
+                const response = await fetch('/api/admin/statistics', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    dashboardData = await response.json();
+                    renderDashboardStats();
+                    renderCharts();
+                    loadRecentOrders();
+                } else {
+                    console.error('Failed to load dashboard data:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Render dashboard statistics
+        function renderDashboardStats() {
+            const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { 
+                style: 'currency', 
+                currency: 'VND' 
+            }).format(amount);
+
+            document.getElementById('totalRevenue').textContent = formatCurrency(dashboardData.totalRevenue || 0);
+            document.getElementById('totalOrders').textContent = dashboardData.totalOrders || 0;
+            document.getElementById('totalUsers').textContent = dashboardData.totalUsers || 0;
+            document.getElementById('totalProducts').textContent = dashboardData.totalProducts || 0;
+            
+            // Growth indicators
+            document.getElementById('revenueGrowth').textContent = `+${dashboardData.revenueGrowth || 0}%`;
+            document.getElementById('ordersGrowth').textContent = `+${dashboardData.ordersGrowth || 0}%`;
+            document.getElementById('usersGrowth').textContent = `+${dashboardData.usersGrowth || 0}%`;
+            document.getElementById('productsGrowth').textContent = `+${dashboardData.productsGrowth || 0}%`;
+        }
+
+        // Render charts
+        function renderCharts() {
+            renderRevenueChart();
+            renderOrderStatusChart();
+        }
+
+        // Revenue chart
+        function renderRevenueChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            if (charts.revenueChart) {
+                charts.revenueChart.destroy();
+            }
+
+            const revenueData = dashboardData.revenueByMonth || [];
+            const labels = revenueData.map(item => item.month);
+            const data = revenueData.map(item => item.revenue);
+
+            charts.revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Doanh thu (VND)',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('vi-VN', { 
+                                        style: 'currency', 
+                                        currency: 'VND',
+                                        maximumFractionDigits: 0 
+                                    }).format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Order status chart
+        function renderOrderStatusChart() {
+            const ctx = document.getElementById('orderStatusChart').getContext('2d');
+            
+            if (charts.orderStatusChart) {
+                charts.orderStatusChart.destroy();
+            }
+
+            const orderStatus = dashboardData.orderStatus || {};
+            const labels = Object.keys(orderStatus).map(status => {
+                const statusMap = {
+                    'pending': 'Chờ xác nhận',
+                    'confirmed': 'Đã xác nhận',
+                    'delivering': 'Đang giao hàng',
+                    'delivered': 'Đã giao hàng',
+                    'completed': 'Hoàn tất',
+                    'cancelled': 'Đã hủy'
+                };
+                return statusMap[status] || status;
+            });
+            const data = Object.values(orderStatus);
+            const colors = ['#ffc107', '#17a2b8', '#007bff', '#28a745', '#6c757d', '#dc3545'];
+
+            charts.orderStatusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, data.length),
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load recent orders
+        async function loadRecentOrders() {
+            try {
+                const token = getAuthToken();
+                if (!token) return;
+
+                const response = await fetch('/api/admin/orders?limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderRecentOrders(data.orders || []);
+                }
+            } catch (error) {
+                console.error('Error loading recent orders:', error);
+            }
+        }
+
+        // Render recent orders
+        function renderRecentOrders(orders) {
+            const tbody = document.getElementById('recentOrdersTableBody');
+            tbody.innerHTML = '';
+
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>#${order.id}</td>
+                    <td>${order.first_name || ''} ${order.last_name || ''}</td>
+                    <td class="fw-bold text-success">${formatPrice(order.total_amount)}</td>
+                    <td><span class="order-status-badge status-${order.status}">${getStatusText(order.status)}</span></td>
+                    <td>${formatDate(order.created_at)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetail(${order.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Chờ xác nhận',
+                'confirmed': 'Đã xác nhận',
+                'delivering': 'Đang giao hàng',
+                'delivered': 'Đã giao hàng',
+                'completed': 'Hoàn tất',
+                'cancelled': 'Đã hủy'
+            };
+            return statusMap[status] || status;
+        }
+
+        // View order detail
+        function viewOrderDetail(orderId) {
+            alert(`Chi tiết đơn hàng #${orderId}`);
+            // Implement order detail modal here
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             if (checkAuth()) {
                 loadCategoriesAndBrands();
                 loadProducts();
+                loadDashboardData(); // Load dashboard data on page load
                 
                 // Add event listeners
                 document.getElementById('searchInput').addEventListener('keyup', function(e) {

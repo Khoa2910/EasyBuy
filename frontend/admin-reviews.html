@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đánh giá - EasyBuy Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .review-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .review-card.pending {
+            border-left: 4px solid #ffc107;
+        }
+        .review-card.approved {
+            border-left: 4px solid #28a745;
+        }
+        .review-card.rejected {
+            border-left: 4px solid #dc3545;
+        }
+        .rating-stars {
+            color: #ffc107;
+            font-size: 18px;
+        }
+        .status-badge {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .filter-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .filter-tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: #6c757d;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+        .filter-tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="admin-products.html">
+                                <i class="fas fa-box"></i> Sản phẩm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="admin-reviews.html">
+                                <i class="fas fa-star"></i> Đánh giá
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="admin-orders.html">
+                                <i class="fas fa-shopping-cart"></i> Đơn hàng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="admin-users.html">
+                                <i class="fas fa-users"></i> Người dùng
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Quản lý đánh giá</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshReviews()">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterReviews('all')">
+                        Tất cả (<span id="allCount">0</span>)
+                    </button>
+                    <button class="filter-tab" onclick="filterReviews('pending')">
+                        Chờ duyệt (<span id="pendingCount">0</span>)
+                    </button>
+                    <button class="filter-tab" onclick="filterReviews('approved')">
+                        Đã duyệt (<span id="approvedCount">0</span>)
+                    </button>
+                    <button class="filter-tab" onclick="filterReviews('rejected')">
+                        Đã từ chối (<span id="rejectedCount">0</span>)
+                    </button>
+                </div>
+
+                <!-- Reviews list -->
+                <div id="reviewsList">
+                    <div class="text-center py-5">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Đang tải đánh giá...</p>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Reviews pagination">
+                    <ul class="pagination justify-content-center" id="reviewsPagination">
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let currentPage = 1;
+        let reviewsData = [];
+
+        // Load reviews on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadReviews();
+        });
+
+        async function loadReviews() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    window.location.href = 'login-simple.html';
+                    return;
+                }
+
+                const response = await fetch(`/api/admin/reviews?status=${currentFilter}&page=${currentPage}&limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    reviewsData = data.reviews;
+                    renderReviews(data.reviews);
+                    renderPagination(data.pagination);
+                    updateCounts();
+                } else {
+                    showError('Không thể tải danh sách đánh giá');
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                showError('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        function renderReviews(reviews) {
+            const container = document.getElementById('reviewsList');
+            
+            if (reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                        <h5>Không có đánh giá nào</h5>
+                        <p class="text-muted">Chưa có đánh giá nào phù hợp với bộ lọc hiện tại.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = reviews.map(review => `
+                <div class="review-card ${getStatusClass(review)}">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <h6 class="mb-0 me-3">${review.product_name}</h6>
+                                <span class="status-badge status-${getStatusBadge(review)}">${getStatusText(review)}</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rating-stars me-2">${renderStars(review.rating)}</div>
+                                <span class="text-muted">${review.first_name} ${review.last_name}</span>
+                                <span class="text-muted ms-2">${formatDate(review.created_at)}</span>
+                            </div>
+                            ${review.comment ? `<p class="mb-0">${review.comment}</p>` : ''}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group" role="group">
+                                ${review.is_approved ? '' : `
+                                    <button class="btn btn-sm btn-success" onclick="updateReviewStatus(${review.id}, 'approve')">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                `}
+                                ${review.is_rejected ? '' : `
+                                    <button class="btn btn-sm btn-danger" onclick="updateReviewStatus(${review.id}, 'reject')">
+                                        <i class="fas fa-times"></i> Từ chối
+                                    </button>
+                                `}
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteReview(${review.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderStars(rating) {
+            return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        }
+
+        function getStatusClass(review) {
+            if (review.is_approved) return 'approved';
+            if (review.is_rejected) return 'rejected';
+            return 'pending';
+        }
+
+        function getStatusBadge(review) {
+            if (review.is_approved) return 'approved';
+            if (review.is_rejected) return 'rejected';
+            return 'pending';
+        }
+
+        function getStatusText(review) {
+            if (review.is_approved) return 'Đã duyệt';
+            if (review.is_rejected) return 'Đã từ chối';
+            return 'Chờ duyệt';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('vi-VN');
+        }
+
+        function renderPagination(pagination) {
+            const container = document.getElementById('reviewsPagination');
+            const { page, pages, total } = pagination;
+            
+            if (pages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Previous button
+            if (page > 1) {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${page - 1})">Trước</a></li>`;
+            }
+            
+            // Page numbers
+            for (let i = Math.max(1, page - 2); i <= Math.min(pages, page + 2); i++) {
+                html += `<li class="page-item ${i === page ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                </li>`;
+            }
+            
+            // Next button
+            if (page < pages) {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${page + 1})">Sau</a></li>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadReviews();
+        }
+
+        function filterReviews(status) {
+            currentFilter = status;
+            currentPage = 1;
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            loadReviews();
+        }
+
+        function updateCounts() {
+            // This would need to be implemented with separate API calls
+            // For now, just show the current filter count
+            const count = reviewsData.length;
+            document.getElementById('allCount').textContent = count;
+        }
+
+        async function updateReviewStatus(reviewId, action) {
+            try {
+                const token = localStorage.getItem('accessToken');
+                const response = await fetch(`/api/admin/reviews/${reviewId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(`Đánh giá đã được ${action === 'approve' ? 'duyệt' : 'từ chối'}`);
+                    loadReviews();
+                } else {
+                    showError(data.error || 'Có lỗi xảy ra');
+                }
+            } catch (error) {
+                console.error('Error updating review status:', error);
+                showError('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        async function deleteReview(reviewId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('accessToken');
+                const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Đánh giá đã được xóa');
+                    loadReviews();
+                } else {
+                    showError(data.error || 'Có lỗi xảy ra');
+                }
+            } catch (error) {
+                console.error('Error deleting review:', error);
+                showError('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        function refreshReviews() {
+            loadReviews();
+        }
+
+        function showSuccess(message) {
+            // Simple alert for now
+            alert(message);
+        }
+
+        function showError(message) {
+            // Simple alert for now
+            alert('Lỗi: ' + message);
+        }
+    </script>
+</body>
+</html>

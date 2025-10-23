@@ -55,7 +55,11 @@
                 
                 <!-- User Actions -->
                 <div class="navbar-actions d-flex gap-2">
-                    <a href="cart.html" class="btn btn-outline-light">
+                    <a href="wishlist.html" class="btn btn-outline-light" title="Yêu thích">
+                        <i class="fas fa-heart"></i>
+                        <span class="badge bg-danger" id="wishlistCount">0</span>
+                    </a>
+                    <a href="cart.html" class="btn btn-outline-light" title="Giỏ hàng">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="badge bg-danger" id="cartCount">0</span>
                     </a>
@@ -655,9 +659,13 @@
         
         function performSearch(e) {
             if (e) e.preventDefault();
-            const searchTerm = document.getElementById('navSearchInput').value.trim();
+            const searchInput = document.getElementById('navSearchInput') || document.getElementById('searchInput');
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
             if (searchTerm) {
-                document.getElementById('filterSearch').value = searchTerm;
+                const filterSearch = document.getElementById('filterSearch');
+                if (filterSearch) {
+                    filterSearch.value = searchTerm;
+                }
                 applyFilters();
             }
         }

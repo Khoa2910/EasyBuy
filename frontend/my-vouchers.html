@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Voucher - EasyBuy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+    <style>
+        .voucher-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .voucher-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .voucher-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #007bff, #28a745);
+        }
+        .voucher-card.expired::before {
+            background: #6c757d;
+        }
+        .voucher-card.used::before {
+            background: #ffc107;
+        }
+        .voucher-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-used {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .discount-badge {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .voucher-info {
+            display: flex;
+            justify-content-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .expiry-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .filter-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 30px;
+        }
+        .filter-tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            color: #6c757d;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filter-tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag"></i> EasyBuy
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="voucher-hunt.html">Săn Voucher</a>
+                    </li>
+                </ul>
+                
+                <form class="navbar-search me-3" onsubmit="performSearch(event)">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm sản phẩm..." id="navSearchInput">
+                        <button class="btn btn-outline-light" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="cart.html" class="btn btn-outline-light me-2" title="Giỏ hàng">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge bg-danger" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="wishlist.html" class="btn btn-outline-light me-2" title="Yêu thích">
+                            <i class="fas fa-heart"></i>
+                            <span class="badge bg-danger" id="wishlistCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown" id="userDropdown" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="userName">Tài khoản</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="profile.html">Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="orders.html">Đơn hàng</a></li>
+                            <li><a class="dropdown-item active" href="my-vouchers.html">Kho Voucher</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="loginBtn">
+                        <a class="btn btn-outline-light" href="login-simple.html">Đăng nhập</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="bg-light py-3">
+        <div class="container">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="index.html">Trang chủ</a></li>
+                <li class="breadcrumb-item active">Kho Voucher</li>
+            </ol>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-dark mb-0">
+                <i class="fas fa-ticket-alt text-primary"></i> Kho Voucher của tôi
+            </h1>
+            <div>
+                <a href="voucher-hunt.html" class="btn btn-primary me-2">
+                    <i class="fas fa-plus"></i> Săn voucher mới
+                </a>
+                <button class="btn btn-outline-primary" onclick="refreshVouchers()">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterVouchers('all')">
+                Tất cả (<span id="allCount">0</span>)
+            </button>
+            <button class="filter-tab" onclick="filterVouchers('available')">
+                Có thể sử dụng (<span id="availableCount">0</span>)
+            </button>
+            <button class="filter-tab" onclick="filterVouchers('used')">
+                Đã sử dụng (<span id="usedCount">0</span>)
+            </button>
+            <button class="filter-tab" onclick="filterVouchers('expired')">
+                Đã hết hạn (<span id="expiredCount">0</span>)
+            </button>
+        </div>
+
+        <!-- Vouchers list -->
+        <div id="vouchersList">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Đang tải voucher...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>EasyBuy</h5>
+                    <p>Nền tảng thương mại điện tử hàng đầu Việt Nam</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 EasyBuy. Tất cả quyền được bảo lưu.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let vouchersData = [];
+
+        // Load vouchers on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVouchers();
+        });
+
+        async function loadVouchers() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    window.location.href = 'login-simple.html';
+                    return;
+                }
+
+                const response = await fetch('/api/user/vouchers', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    vouchersData = data.vouchers;
+                    renderVouchers(data.vouchers);
+                    updateCounts();
+                } else {
+                    showError('Không thể tải danh sách voucher');
+                }
+            } catch (error) {
+                console.error('Error loading vouchers:', error);
+                showError('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        function renderVouchers(vouchers) {
+            const container = document.getElementById('vouchersList');
+            
+            if (vouchers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h5>Chưa có voucher nào</h5>
+                        <p class="text-muted">Bạn chưa có voucher nào. Hãy săn voucher để nhận ưu đãi!</p>
+                        <a href="voucher-hunt.html" class="btn btn-primary">Săn voucher ngay</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = vouchers.map(voucher => {
+                const status = getVoucherStatus(voucher);
+                const statusClass = `status-${status}`;
+                const statusText = getStatusText(status);
+                
+                return `
+                    <div class="voucher-card ${status}">
+                        <div class="voucher-status ${statusClass}">${statusText}</div>
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 text-primary">${voucher.name}</h5>
+                                <p class="text-muted mb-2">${voucher.description}</p>
+                            </div>
+                            <div class="discount-badge">
+                                ${voucher.discount_type === 'percentage' ? 
+                                    `Giảm ${voucher.discount_value}%` : 
+                                    `Giảm ${formatCurrency(voucher.discount_value)}`
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="voucher-info">
+                            <div>
+                                <small class="text-muted">Mã voucher: <strong>${voucher.code}</strong></small>
+                                ${voucher.minimum_amount ? 
+                                    `<br><small class="text-muted">Đơn tối thiểu: ${formatCurrency(voucher.minimum_amount)}</small>` : 
+                                    ''
+                                }
+                                ${voucher.maximum_discount ? 
+                                    `<br><small class="text-muted">Giảm tối đa: ${formatCurrency(voucher.maximum_discount)}</small>` : 
+                                    ''
+                                }
+                            </div>
+                            <div class="text-end">
+                                <div class="expiry-date">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Hết hạn: ${formatDate(voucher.expires_at)}
+                                </div>
+                                ${status === 'available' ? `
+                                    <button class="btn btn-success btn-sm mt-2" onclick="copyVoucherCode('${voucher.code}')">
+                                        <i class="fas fa-copy me-1"></i>Copy mã
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getVoucherStatus(voucher) {
+            const now = new Date();
+            const expiresAt = new Date(voucher.expires_at);
+            
+            if (voucher.used_at) {
+                return 'used';
+            } else if (expiresAt < now) {
+                return 'expired';
+            } else {
+                return 'available';
+            }
+        }
+
+        function getStatusText(status) {
+            const statusTexts = {
+                'available': 'Có thể sử dụng',
+                'used': 'Đã sử dụng',
+                'expired': 'Đã hết hạn'
+            };
+            return statusTexts[status] || status;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { 
+                style: 'currency', 
+                currency: 'VND' 
+            }).format(amount);
+        }
+
+        function filterVouchers(status) {
+            currentFilter = status;
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let filteredVouchers = vouchersData;
+            
+            if (status !== 'all') {
+                filteredVouchers = vouchersData.filter(voucher => {
+                    const voucherStatus = getVoucherStatus(voucher);
+                    return voucherStatus === status;
+                });
+            }
+            
+            renderVouchers(filteredVouchers);
+        }
+
+        function updateCounts() {
+            const allCount = vouchersData.length;
+            const availableCount = vouchersData.filter(v => getVoucherStatus(v) === 'available').length;
+            const usedCount = vouchersData.filter(v => getVoucherStatus(v) === 'used').length;
+            const expiredCount = vouchersData.filter(v => getVoucherStatus(v) === 'expired').length;
+            
+            document.getElementById('allCount').textContent = allCount;
+            document.getElementById('availableCount').textContent = availableCount;
+            document.getElementById('usedCount').textContent = usedCount;
+            document.getElementById('expiredCount').textContent = expiredCount;
+        }
+
+        function copyVoucherCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showSuccess('Đã copy mã voucher: ' + code);
+            }).catch(() => {
+                showError('Không thể copy mã voucher');
+            });
+        }
+
+        function refreshVouchers() {
+            loadVouchers();
+        }
+
+        function performSearch(e) {
+            if (e) e.preventDefault();
+            const searchInput = document.getElementById('navSearchInput');
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
+            if (searchTerm) {
+                window.location.href = `products.html?search=${encodeURIComponent(searchTerm)}`;
+            }
+        }
+
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+
+        function logout() {
+            localStorage.removeItem('accessToken');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

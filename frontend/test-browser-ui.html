@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test UI Update - EasyBuy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test UI Update - EasyBuy</h1>
+    
+    <div class="test-container">
+        <h2>1. Test Login</h2>
+        <button class="test-button" onclick="testLogin()">Test Login</button>
+        <div id="loginResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>2. Test User Info</h2>
+        <button class="test-button" onclick="testUserInfo()">Get User Info</button>
+        <div id="userResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>3. Test Cart & Wishlist</h2>
+        <button class="test-button" onclick="testCartWishlist()">Test Cart & Wishlist</button>
+        <div id="cartResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>4. Test Token Parsing</h2>
+        <button class="test-button" onclick="testTokenParsing()">Parse Token</button>
+        <div id="tokenResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>5. Test UI Update</h2>
+        <button class="test-button" onclick="testUIUpdate()">Update UI</button>
+        <div id="uiResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.innerHTML = message;
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: '123456'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('accessToken', data.token);
+                    showResult('loginResult', `
+                        ✅ Login successful!<br>
+                        User: ${data.user.first_name} ${data.user.last_name}<br>
+                        Email: ${data.user.email}<br>
+                        Token: ${data.token ? 'Saved' : 'Missing'}
+                    `, 'success');
+                } else {
+                    showResult('loginResult', `❌ Login failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('loginResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUserInfo() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    showResult('userResult', '❌ No token found. Please login first.', 'error');
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE}/user/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('userResult', `
+                        ✅ User info retrieved!<br>
+                        Name: ${data.user.first_name} ${data.user.last_name}<br>
+                        Email: ${data.user.email}<br>
+                        Role: ${data.user.role}
+                    `, 'success');
+                } else {
+                    showResult('userResult', `❌ Failed to get user info: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('userResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCartWishlist() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    showResult('cartResult', '❌ No token found. Please login first.', 'error');
+                    return;
+                }
+                
+                const [cartResponse, wishlistResponse] = await Promise.all([
+                    fetch(`${API_BASE}/cart`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch(`${API_BASE}/wishlist`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+                
+                const cartData = await cartResponse.json();
+                const wishlistData = await wishlistResponse.json();
+                
+                showResult('cartResult', `
+                    ✅ Cart & Wishlist data retrieved!<br>
+                    Cart items: ${cartData.itemCount || 0}<br>
+                    Wishlist items: ${wishlistData.itemCount || 0}
+                `, 'success');
+                
+            } catch (error) {
+                showResult('cartResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testTokenParsing() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    showResult('tokenResult', '❌ No token found. Please login first.', 'error');
+                    return;
+                }
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                showResult('tokenResult', `
+                    ✅ Token parsed successfully!<br>
+                    ID: ${payload.id}<br>
+                    Email: ${payload.email}<br>
+                    First Name: ${payload.firstName || payload.first_name}<br>
+                    Last Name: ${payload.lastName || payload.last_name}<br>
+                    Role: ${payload.role}
+                `, 'success');
+                
+            } catch (error) {
+                showResult('tokenResult', `❌ Error parsing token: ${error.message}`, 'error');
+            }
+        }
+        
+        function testUIUpdate() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    showResult('uiResult', '❌ No token found. Please login first.', 'error');
+                    return;
+                }
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userName = payload.firstName || payload.first_name;
+                
+                showResult('uiResult', `
+                    ✅ UI Update test!<br>
+                    Username should show: <strong>${userName}</strong><br>
+                    Instead of: <strong>Tài khoản</strong><br><br>
+                    <em>Check the main website to see if the username is updated correctly.</em>
+                `, 'success');
+                
+            } catch (error) {
+                showResult('uiResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

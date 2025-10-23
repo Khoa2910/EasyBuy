@@ -1,0 +1,72 @@
+<!-- Standard Header Template -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="index.html">
+            <i class="fas fa-shopping-bag"></i> EasyBuy
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto ms-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="products.html">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="voucher-hunt.html">Săn Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="my-vouchers.html">Kho Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Liên hệ</a>
+                </li>
+            </ul>
+            
+            <!-- Search Bar -->
+            <form class="navbar-search me-3" onsubmit="performSearch(event)">
+                <div class="position-relative">
+                    <input class="form-control" type="search" placeholder="Tìm kiếm sản phẩm..." id="navSearchInput">
+                    <button class="btn btn-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- User Actions -->
+            <div class="navbar-actions d-flex gap-2">
+                <a href="wishlist.html" class="btn btn-outline-light" title="Yêu thích">
+                    <i class="fas fa-heart"></i>
+                    <span class="badge bg-danger" id="wishlistCount">0</span>
+                </a>
+                <a href="cart.html" class="btn btn-outline-light" title="Giỏ hàng">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="badge bg-danger" id="cartCount">0</span>
+                </a>
+                <div class="dropdown" id="userDropdown" style="display: none;">
+                    <a class="btn btn-outline-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i> <span id="userName">Tài khoản</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="profile.html">Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="orders.html">Đơn hàng</a></li>
+                        <li><a class="dropdown-item" href="my-vouchers.html">Kho Voucher</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                    </ul>
+                </div>
+                <a class="btn btn-outline-light" href="login-simple.html" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

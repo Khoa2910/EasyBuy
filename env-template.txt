@@ -1,0 +1,24 @@
+# Database Configuration
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=easybuy
+
+# JWT Configuration
+JWT_SECRET=your-secret-key-change-in-production
+
+# Email Configuration (SendGrid)
+# Get your API key from: https://app.sendgrid.com/settings/api_keys
+SENDGRID_API_KEY=SG.your-sendgrid-api-key-here
+FROM_EMAIL=noreply@easybuy.com
+FROM_NAME=EasyBuy
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Redis Configuration (Optional)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=

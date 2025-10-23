@@ -210,8 +210,8 @@ class ProductsPage {
             });
 
             if (this.filters.search) params.append('search', this.filters.search);
-            if (this.filters.category) params.append('category', this.filters.category);
-            if (this.filters.brand) params.append('brand', this.filters.brand);
+            if (this.filters.category) params.append('category_id', this.filters.category);
+            if (this.filters.brand) params.append('brand_id', this.filters.brand);
             if (this.filters.minPrice) params.append('minPrice', this.filters.minPrice);
             if (this.filters.maxPrice) params.append('maxPrice', this.filters.maxPrice);
 

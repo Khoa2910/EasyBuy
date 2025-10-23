@@ -16,34 +16,80 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
         <div class="container-fluid px-4">
             <a class="navbar-brand" href="index.html">
-                <i class="fas fa-shopping-bag"></i>EasyBuy
+                <i class="fas fa-shopping-bag"></i> EasyBuy
             </a>
             
-            <div class="navbar-nav ms-auto">
-                <a href="index.html" class="nav-link">
-                    <i class="fas fa-home me-1"></i>Trang chủ
-                </a>
-                <a href="products.html" class="nav-link">
-                    <i class="fas fa-box me-1"></i>Sản phẩm
-                </a>
-                <a href="cart.html" class="nav-link">
-                    <i class="fas fa-shopping-cart me-1"></i>Giỏ hàng
-                </a>
-                <a href="orders.html" class="nav-link">
-                    <i class="fas fa-shopping-bag me-1"></i>Đơn hàng
-                </a>
-                <a href="profile.html" class="nav-link active">
-                    <i class="fas fa-user me-1"></i>Hồ sơ
-                </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="voucher-hunt.html">Săn Voucher</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-vouchers.html">Kho Voucher</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Liên hệ</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Bar -->
+                <form class="navbar-search me-3" onsubmit="performSearch(event)">
+                    <div class="position-relative">
+                        <input class="form-control" type="search" placeholder="Tìm kiếm sản phẩm..." id="navSearchInput">
+                        <button class="btn btn-light" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- User Actions -->
+                <div class="navbar-actions d-flex gap-2">
+                    <a href="wishlist.html" class="btn btn-outline-light" title="Yêu thích">
+                        <i class="fas fa-heart"></i>
+                        <span class="badge bg-danger" id="wishlistCount">0</span>
+                    </a>
+                    <a href="cart.html" class="btn btn-outline-light" title="Giỏ hàng">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger" id="cartCount">0</span>
+                    </a>
+                    <div class="dropdown" id="userDropdown" style="display: none;">
+                        <a class="btn btn-outline-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="userName">Tài khoản</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item active" href="profile.html">Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="orders.html">Đơn hàng</a></li>
+                            <li><a class="dropdown-item" href="my-vouchers.html">Kho Voucher</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                    <a class="btn btn-outline-light" href="login-simple.html" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-4">
+    <div class="container mt-4" style="padding-top: 100px;">
         <div class="row">
             <div class="col-md-3">
                 <!-- Sidebar -->
@@ -355,12 +401,12 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="mb-1">
-                                        ${addr.recipient_name}
+                                        ${addr.recipient_name || 'Tên người nhận'}
                                         ${addr.is_default ? '<span class="badge bg-primary ms-2">Mặc định</span>' : ''}
                                     </h6>
-                                    <p class="mb-1">${addr.address_line1}${addr.address_line2 ? ', ' + addr.address_line2 : ''}</p>
-                                    <p class="mb-1">${addr.city}, ${addr.state} ${addr.postal_code}</p>
-                                    <small class="text-muted">${addr.phone}</small>
+                                    <p class="mb-1">${addr.address_line1 || 'Địa chỉ chính'}${addr.address_line2 ? ', ' + addr.address_line2 : ''}</p>
+                                    <p class="mb-1">${addr.city || 'Thành phố'}, ${addr.state || 'Tỉnh'} ${addr.postal_code || ''}</p>
+                                    <small class="text-muted">${addr.phone || 'Số điện thoại'}</small>
                                 </div>
                                 <div>
                                     <button class="btn btn-outline-primary btn-sm me-2" onclick="profilePage.editAddress(${addr.id})">
@@ -413,18 +459,36 @@
                 }
             }
             
-            changePassword() {
+            async changePassword() {
                 const currentPassword = document.getElementById('currentPassword').value;
                 const newPassword = document.getElementById('newPassword').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
                 
                 if (newPassword !== confirmPassword) {
-                    alert('Mật khẩu xác nhận không khớp!');
+                    this.showNotification('Mật khẩu xác nhận không khớp!', 'error');
                     return;
                 }
                 
-                alert('Đổi mật khẩu thành công!');
-                document.getElementById('passwordForm').reset();
+                if (newPassword.length < 6) {
+                    this.showNotification('Mật khẩu mới phải có ít nhất 6 ký tự!', 'error');
+                    return;
+                }
+                
+                try {
+                    await this.apiCall('/user/change-password', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            currentPassword,
+                            newPassword
+                        })
+                    });
+                    
+                    this.showNotification('Đổi mật khẩu thành công!', 'success');
+                    document.getElementById('passwordForm').reset();
+                } catch (error) {
+                    console.error('Error changing password:', error);
+                    this.showNotification('Có lỗi xảy ra khi đổi mật khẩu', 'error');
+                }
             }
             
             addAddress() {

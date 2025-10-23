@@ -13,12 +13,16 @@ class TMDTApp {
 
     init() {
         this.loadUser();
-        this.loadCart();
-        this.loadWishlist();
         this.bindEvents();
         this.loadCategories();
         this.loadFeaturedProducts();
         this.loadBestsellerProducts();
+        
+        // Load cart and wishlist after user is loaded
+        setTimeout(() => {
+            this.loadCart();
+            this.loadWishlist();
+        }, 100);
         
         // Don't auto-redirect, let user stay on page
         console.log('App initialized, user status:', this.user ? 'logged in' : 'not logged in');
@@ -88,8 +92,8 @@ class TMDTApp {
                 this.user = {
                     id: payload.id,
                     email: payload.email,
-                    firstName: payload.firstName,
-                    lastName: payload.lastName,
+                    firstName: payload.firstName || payload.first_name,
+                    lastName: payload.lastName || payload.last_name,
                     role: payload.role
                 };
                 console.log('User loaded:', this.user);
@@ -98,22 +102,45 @@ class TMDTApp {
                 console.error('Error parsing token:', error);
                 localStorage.removeItem('accessToken');
                 this.user = null;
+                this.updateUserUI();
             }
         } else {
             this.user = null;
+            this.updateUserUI();
         }
     }
 
     updateUserUI() {
         const userMenu = document.getElementById('user-menu');
         const loginMenu = document.getElementById('login-menu');
+        const loginBtn = document.getElementById('loginBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        const userName = document.getElementById('userName');
+        
+        console.log('Updating user UI, user:', this.user);
         
         if (this.user) {
             if (userMenu) userMenu.style.display = 'block';
             if (loginMenu) loginMenu.style.display = 'none';
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (userDropdown) userDropdown.style.display = 'block';
+            
+            // Update user name display
+            if (userName && this.user.firstName) {
+                userName.textContent = this.user.firstName;
+                console.log('Updated username to:', this.user.firstName);
+            }
         } else {
             if (userMenu) userMenu.style.display = 'none';
             if (loginMenu) loginMenu.style.display = 'block';
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (userDropdown) userDropdown.style.display = 'none';
+            
+            // Reset to default
+            if (userName) {
+                userName.textContent = 'Tài khoản';
+                console.log('Reset username to: Tài khoản');
+            }
         }
     }
 
@@ -481,11 +508,14 @@ class TMDTApp {
                 const token = data.accessToken || data.token;
                 localStorage.setItem('accessToken', token);
                 console.log('Token saved:', token);
-                this.user = data.user;
-                console.log('User set:', this.user);
-                this.updateUserUI();
+                
+                // Reload user from token to ensure consistency
+                this.loadUser();
+                
+                // Load cart and wishlist
                 await this.loadCart();
                 await this.loadWishlist();
+                
                 // Login successful - no message needed
                 
                 // Redirect to intended page or home

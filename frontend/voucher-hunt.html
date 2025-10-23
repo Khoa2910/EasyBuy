@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Săn Voucher - EasyBuy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+    <style>
+        .voucher-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .voucher-card:hover {
+            transform: translateY(-5px);
+        }
+        .voucher-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+        .voucher-card.percentage {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .voucher-card.fixed {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .voucher-card.expired {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            opacity: 0.7;
+        }
+        .voucher-discount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .voucher-code {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .voucher-expiry {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .claim-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .claim-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        .claim-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .my-vouchers {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .voucher-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
+        }
+        .hunt-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .treasure-icon {
+            font-size: 3rem;
+            color: #ffc107;
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag"></i> EasyBuy
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="voucher-hunt.html">Săn Voucher</a>
+                    </li>
+                </ul>
+                
+                <form class="navbar-search me-3" onsubmit="performSearch(event)">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm sản phẩm..." id="navSearchInput">
+                        <button class="btn btn-outline-light" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="cart.html" class="btn btn-outline-light me-2" title="Giỏ hàng">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge bg-danger" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="wishlist.html" class="btn btn-outline-light me-2" title="Yêu thích">
+                            <i class="fas fa-heart"></i>
+                            <span class="badge bg-danger" id="wishlistCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown" id="userDropdown" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="userName">Tài khoản</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="profile.html">Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="orders.html">Đơn hàng</a></li>
+                            <li><a class="dropdown-item" href="voucher-hunt.html">Voucher của tôi</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="loginBtn">
+                        <a class="btn btn-outline-light" href="login-simple.html">Đăng nhập</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="bg-light py-3">
+        <div class="container">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="index.html">Trang chủ</a></li>
+                <li class="breadcrumb-item active">Săn Voucher</li>
+            </ol>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <div class="treasure-icon hunt-animation">
+                <i class="fas fa-gift"></i>
+            </div>
+            <h1 class="fw-bold text-dark mb-3">🎫 Săn Voucher</h1>
+            <p class="lead text-muted">Khám phá và nhận những voucher hấp dẫn từ EasyBuy!</p>
+        </div>
+
+        <!-- Available Vouchers -->
+        <div class="row" id="vouchersList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Đang tải voucher...</p>
+            </div>
+        </div>
+
+        <!-- My Vouchers -->
+        <div class="my-vouchers" id="myVouchersSection" style="display: none;">
+            <h4 class="fw-bold mb-3">
+                <i class="fas fa-ticket-alt text-primary"></i> Voucher của tôi
+            </h4>
+            <div id="myVouchersList">
+                <!-- My vouchers will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>EasyBuy</h5>
+                    <p>Nền tảng thương mại điện tử hàng đầu Việt Nam</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 EasyBuy. Tất cả quyền được bảo lưu.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script>
+        let availableVouchers = [];
+        let myVouchers = [];
+
+        // Load page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVouchers();
+            loadMyVouchers();
+        });
+
+        async function loadVouchers() {
+            try {
+                const response = await fetch('/api/vouchers');
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableVouchers = data.vouchers;
+                    renderVouchers(data.vouchers);
+                } else {
+                    showError('Không thể tải danh sách voucher');
+                }
+            } catch (error) {
+                console.error('Error loading vouchers:', error);
+                showError('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        async function loadMyVouchers() {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) return;
+
+                const response = await fetch('/api/user/vouchers', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    myVouchers = data.vouchers;
+                    renderMyVouchers(data.vouchers);
+                }
+            } catch (error) {
+                console.error('Error loading my vouchers:', error);
+            }
+        }
+
+        function renderVouchers(vouchers) {
+            const container = document.getElementById('vouchersList');
+            
+            if (vouchers.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                        <h5>Không có voucher nào</h5>
+                        <p class="text-muted">Hiện tại chưa có voucher nào khả dụng.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = vouchers.map(voucher => {
+                const isExpired = new Date(voucher.expires_at) < new Date();
+                const discountText = voucher.discount_type === 'percentage' 
+                    ? `${voucher.discount_value}%` 
+                    : `${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discount_value)}`;
+                
+                return `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="voucher-card ${voucher.discount_type} ${isExpired ? 'expired' : ''}">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="mb-1">${voucher.name}</h5>
+                                    <p class="mb-0 small opacity-75">${voucher.description}</p>
+                                </div>
+                                <div class="text-end">
+                                    <div class="voucher-discount">${discountText}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="voucher-code">${voucher.code}</div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="voucher-expiry">
+                                    <i class="fas fa-clock"></i> Hết hạn: ${new Date(voucher.expires_at).toLocaleDateString('vi-VN')}
+                                </div>
+                                <button class="btn claim-btn" 
+                                        onclick="claimVoucher(${voucher.id})" 
+                                        ${isExpired ? 'disabled' : ''}>
+                                    <i class="fas fa-gift"></i> Nhận ngay
+                                </button>
+                            </div>
+                            
+                            ${voucher.minimum_amount > 0 ? `
+                                <div class="mt-2 small opacity-75">
+                                    <i class="fas fa-info-circle"></i> Áp dụng cho đơn hàng từ ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.minimum_amount)}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMyVouchers(vouchers) {
+            const section = document.getElementById('myVouchersSection');
+            const container = document.getElementById('myVouchersList');
+            
+            if (vouchers.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = vouchers.map(voucher => `
+                <div class="voucher-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${voucher.name}</h6>
+                            <p class="mb-1 text-muted">${voucher.description}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-tag"></i> ${voucher.code} | 
+                                <i class="fas fa-clock"></i> Hết hạn: ${new Date(voucher.expires_at).toLocaleDateString('vi-VN')}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary">${voucher.discount_type === 'percentage' ? `${voucher.discount_value}%` : `${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discount_value)}`}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function claimVoucher(voucherId) {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    alert('Vui lòng đăng nhập để nhận voucher');
+                    window.location.href = 'login-simple.html';
+                    return;
+                }
+
+                const response = await fetch(`/api/vouchers/${voucherId}/claim`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Nhận voucher thành công!');
+                    loadVouchers();
+                    loadMyVouchers();
+                } else {
+                    showError(data.error || 'Không thể nhận voucher');
+                }
+            } catch (error) {
+                console.error('Error claiming voucher:', error);
+                showError('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        function performSearch(e) {
+            if (e) e.preventDefault();
+            const searchInput = document.getElementById('navSearchInput');
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
+            if (searchTerm) {
+                window.location.href = `products.html?search=${encodeURIComponent(searchTerm)}`;
+            }
+        }
+
+        function showSuccess(message) {
+            // Simple alert for now
+            alert('✅ ' + message);
+        }
+
+        function showError(message) {
+            // Simple alert for now
+            alert('❌ ' + message);
+        }
+
+        function logout() {
+            localStorage.removeItem('accessToken');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

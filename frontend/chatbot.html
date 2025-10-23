@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - EasyBuy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="assets/css/customer-theme.css" rel="stylesheet">
+    <style>
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .chatbot-footer {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message.bot {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin: 0 8px;
+        }
+        .message.user .message-avatar {
+            background: #007bff;
+            color: white;
+            order: 2;
+        }
+        .message.bot .message-avatar {
+            background: #667eea;
+            color: white;
+        }
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            color: #666;
+            font-style: italic;
+        }
+        .typing-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+        .typing-dots span {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #666;
+            margin: 0 1px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        .product-suggestion {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .product-suggestion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .product-suggestion img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 12px;
+        }
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+        .chatbot-toggle.active {
+            background: #dc3545;
+        }
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .quick-action {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .quick-action:hover {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Chatbot Toggle Button -->
+    <div class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-robot me-2"></i>
+                <div>
+                    <h6 class="mb-0">AI Assistant</h6>
+                    <small>EasyBuy Shopping Helper</small>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-outline-light" onclick="toggleChatbot()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="chatbot-body" id="chatbotBody">
+            <div class="message bot">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p class="mb-2">Xin chào! Tôi là AI Assistant của EasyBuy. Tôi có thể giúp bạn:</p>
+                    <ul class="mb-2">
+                        <li>Tìm sản phẩm phù hợp</li>
+                        <li>Gợi ý sản phẩm dựa trên sở thích</li>
+                        <li>So sánh sản phẩm</li>
+                        <li>Trả lời câu hỏi về sản phẩm</li>
+                    </ul>
+                    <p class="mb-0">Bạn cần tôi giúp gì?</p>
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <div class="quick-action" onclick="sendQuickMessage('Tôi muốn tìm đồ gia dụng')">Đồ gia dụng</div>
+                <div class="quick-action" onclick="sendQuickMessage('Gợi ý sản phẩm hot')">Sản phẩm hot</div>
+                <div class="quick-action" onclick="sendQuickMessage('Sản phẩm giảm giá')">Giảm giá</div>
+                <div class="quick-action" onclick="sendQuickMessage('So sánh sản phẩm')">So sánh</div>
+            </div>
+        </div>
+        
+        <div class="chatbot-footer">
+            <div class="input-group">
+                <input type="text" class="form-control" id="chatInput" placeholder="Nhập câu hỏi của bạn..." onkeypress="handleKeyPress(event)">
+                <button class="btn btn-primary" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isTyping = false;
+
+        function toggleChatbot() {
+            const container = document.getElementById('chatbotContainer');
+            const toggle = document.getElementById('chatbotToggle');
+            
+            if (container.style.display === 'none' || container.style.display === '') {
+                container.style.display = 'flex';
+                toggle.classList.add('active');
+                toggle.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                container.style.display = 'none';
+                toggle.classList.remove('active');
+                toggle.innerHTML = '<i class="fas fa-robot"></i>';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTyping();
+            
+            // Process message
+            setTimeout(() => {
+                processMessage(message);
+            }, 1000);
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage();
+        }
+
+        function addMessage(sender, content, isHtml = false) {
+            const body = document.getElementById('chatbotBody');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">${isHtml ? content : content}</div>
+            `;
+            
+            body.appendChild(messageDiv);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function showTyping() {
+            const body = document.getElementById('chatbotBody');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    AI đang suy nghĩ<span class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </span>
+                </div>
+            `;
+            
+            body.appendChild(typingDiv);
+            body.scrollTop = body.scrollHeight;
+            isTyping = true;
+        }
+
+        function hideTyping() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+            isTyping = false;
+        }
+
+        async function processMessage(message) {
+            hideTyping();
+            
+            // Simple keyword-based responses
+            const response = await getAIResponse(message);
+            addMessage('bot', response, true);
+        }
+
+        async function getAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Product search
+            if (lowerMessage.includes('tìm') || lowerMessage.includes('search')) {
+                return await searchProducts(message);
+            }
+            
+            // Hot products
+            if (lowerMessage.includes('hot') || lowerMessage.includes('nổi bật')) {
+                return await getHotProducts();
+            }
+            
+            // Discount products
+            if (lowerMessage.includes('giảm giá') || lowerMessage.includes('sale')) {
+                return await getDiscountProducts();
+            }
+            
+            // Compare products
+            if (lowerMessage.includes('so sánh') || lowerMessage.includes('compare')) {
+                return await getCompareProducts();
+            }
+            
+            // General help
+            if (lowerMessage.includes('giúp') || lowerMessage.includes('help')) {
+                return `
+                    <p>Tôi có thể giúp bạn:</p>
+                    <ul>
+                        <li><strong>Tìm sản phẩm:</strong> "Tìm nồi cơm điện"</li>
+                        <li><strong>Sản phẩm hot:</strong> "Sản phẩm nổi bật"</li>
+                        <li><strong>Giảm giá:</strong> "Sản phẩm giảm giá"</li>
+                        <li><strong>So sánh:</strong> "So sánh sản phẩm"</li>
+                    </ul>
+                `;
+            }
+            
+            // Default response
+            return `
+                <p>Tôi hiểu bạn đang tìm kiếm thông tin về: <strong>"${message}"</strong></p>
+                <p>Để tôi có thể giúp bạn tốt hơn, bạn có thể:</p>
+                <ul>
+                    <li>Mô tả cụ thể sản phẩm bạn cần</li>
+                    <li>Nói về ngân sách của bạn</li>
+                    <li>Chia sẻ sở thích hoặc nhu cầu</li>
+                </ul>
+            `;
+        }
+
+        async function searchProducts(query) {
+            try {
+                const response = await fetch(`/api/products?search=${encodeURIComponent(query)}&limit=3`);
+                const data = await response.json();
+                
+                if (data.products && data.products.length > 0) {
+                    let html = `<p>Tôi tìm thấy ${data.products.length} sản phẩm phù hợp:</p>`;
+                    
+                    data.products.forEach(product => {
+                        html += `
+                            <div class="product-suggestion" onclick="viewProduct(${product.id})">
+                                <div class="d-flex align-items-center">
+                                    <img src="${product.imageUrl || '/static/products/placeholder.jpg'}" alt="${product.name}">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">${product.name}</h6>
+                                        <p class="text-muted mb-1">${product.description.substring(0, 50)}...</p>
+                                        <p class="text-primary mb-0 fw-bold">${formatCurrency(product.price)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    return html;
+                } else {
+                    return '<p>Xin lỗi, tôi không tìm thấy sản phẩm nào phù hợp. Bạn có thể thử từ khóa khác không?</p>';
+                }
+            } catch (error) {
+                console.error('Error searching products:', error);
+                return '<p>Xin lỗi, có lỗi xảy ra khi tìm kiếm sản phẩm. Vui lòng thử lại sau.</p>';
+            }
+        }
+
+        async function getHotProducts() {
+            try {
+                const response = await fetch('/api/products?sort=popular&limit=3');
+                const data = await response.json();
+                
+                if (data.products && data.products.length > 0) {
+                    let html = '<p>Đây là những sản phẩm hot nhất hiện tại:</p>';
+                    
+                    data.products.forEach(product => {
+                        html += `
+                            <div class="product-suggestion" onclick="viewProduct(${product.id})">
+                                <div class="d-flex align-items-center">
+                                    <img src="${product.imageUrl || '/static/products/placeholder.jpg'}" alt="${product.name}">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">${product.name}</h6>
+                                        <p class="text-muted mb-1">${product.description.substring(0, 50)}...</p>
+                                        <p class="text-primary mb-0 fw-bold">${formatCurrency(product.price)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    return html;
+                } else {
+                    return '<p>Hiện tại chưa có sản phẩm hot nào.</p>';
+                }
+            } catch (error) {
+                console.error('Error getting hot products:', error);
+                return '<p>Xin lỗi, có lỗi xảy ra khi lấy sản phẩm hot.</p>';
+            }
+        }
+
+        async function getDiscountProducts() {
+            try {
+                const response = await fetch('/api/products?sort=discount&limit=3');
+                const data = await response.json();
+                
+                if (data.products && data.products.length > 0) {
+                    let html = '<p>Đây là những sản phẩm đang giảm giá:</p>';
+                    
+                    data.products.forEach(product => {
+                        const discount = product.sale_price ? 
+                            Math.round((1 - product.sale_price / product.price) * 100) : 0;
+                        
+                        html += `
+                            <div class="product-suggestion" onclick="viewProduct(${product.id})">
+                                <div class="d-flex align-items-center">
+                                    <img src="${product.imageUrl || '/static/products/placeholder.jpg'}" alt="${product.name}">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">${product.name}</h6>
+                                        <p class="text-muted mb-1">${product.description.substring(0, 50)}...</p>
+                                        <div class="d-flex align-items-center">
+                                            <p class="text-primary mb-0 fw-bold me-2">${formatCurrency(product.sale_price || product.price)}</p>
+                                            ${discount > 0 ? `<span class="badge bg-danger">-${discount}%</span>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    return html;
+                } else {
+                    return '<p>Hiện tại chưa có sản phẩm giảm giá nào.</p>';
+                }
+            } catch (error) {
+                console.error('Error getting discount products:', error);
+                return '<p>Xin lỗi, có lỗi xảy ra khi lấy sản phẩm giảm giá.</p>';
+            }
+        }
+
+        async function getCompareProducts() {
+            return `
+                <p>Để so sánh sản phẩm, bạn có thể:</p>
+                <ul>
+                    <li>Nói tên 2-3 sản phẩm muốn so sánh</li>
+                    <li>Mô tả tiêu chí so sánh (giá, tính năng, thương hiệu)</li>
+                    <li>Chia sẻ ngân sách để tôi gợi ý sản phẩm phù hợp</li>
+                </ul>
+                <p><strong>Ví dụ:</strong> "So sánh nồi cơm điện A và B"</p>
+            `;
+        }
+
+        function viewProduct(productId) {
+            window.open(`products.html?id=${productId}`, '_blank');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { 
+                style: 'currency', 
+                currency: 'VND' 
+            }).format(amount);
+        }
+
+        // Auto-open chatbot on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show welcome message after 2 seconds
+            setTimeout(() => {
+                if (!isTyping) {
+                    addMessage('bot', 'Chào mừng bạn đến với EasyBuy! Tôi có thể giúp gì cho bạn?');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

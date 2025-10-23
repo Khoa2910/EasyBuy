@@ -448,8 +448,7 @@ app.post('/orders', [
     });
 
     const shipping = subtotal > 500000 ? 0 : 30000; // Free shipping over 500k
-    const tax = subtotal * 0.1; // 10% tax
-    const totalAmount = subtotal + shipping + tax;
+    const totalAmount = subtotal + shipping;
 
     // Create order
     const orderNumber = generateOrderNumber();
@@ -457,7 +456,7 @@ app.post('/orders', [
       INSERT INTO orders (user_id, order_number, status, payment_status, subtotal, shipping_cost, tax_amount, total_amount, shipping_address, billing_address, payment_method, notes, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
-      userId, orderNumber, 'pending', 'pending', subtotal, shipping, tax, totalAmount,
+      userId, orderNumber, 'pending', 'pending', subtotal, shipping, 0, totalAmount,
       JSON.stringify(shippingAddress), JSON.stringify(billingAddress), paymentMethod, notes || null
     ]);
 
